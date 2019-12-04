@@ -1,0 +1,11 @@
+﻿source,search
+Threat - RR - Prohibited Process Detected - System - Rule,index=_internal|head 1
+Threat - RR - DDNS Activity Detected - System - Rule,|index=_internal|head 2
+Threat - RR - DNS Activity to External IP Detected - System - Rule,|index=_internal|head 3
+Threat - RR - Process Discrepancy Detected - System - Rule,|index=_internal|head 4
+Threat - RR - Threat Intel Match on DNS Domain request - System - Rule,|index=_internal|head 5
+Threat - RR - USB Insertion with 1st time seen Serial Number - Combined - Rule,|index=_internal|head 6
+Threat - RR - USB Insertion with 1st time seen Vendor ID - Combined - Rule,"index=""botsv2"" sourcetype=osquery_results  TERM(USB) name=""pack_hardware-monitoring_usb_devices"" action=""added"" host=$system$
+|eval rule_attack_tactic_technique=""initial_access - T1200 - Hardware Additions - https://attack.mitre.org/techniques/T1200/|initial_access - T1091 - Replication Through Removable Media - https://attack.mitre.org/techniques/T1091/|lateral_movement - T1091 - Data from Removable Media - https://attack.mitre.org/techniques/T1025/|collection - T1025 - Replication Through Removable Media - https://attack.mitre.org/techniques/T1091/|exfiltration - T1052 - Exfiltration Over Physical Medium - https://attack.mitre.org/techniques/T1052/
+|command_and_control - T1092 - Communication Through Removable Media - https://attack.mitre.org/techniques/T1092/""|eventstats earliest_time(_time) as ET by columns.vendor_id|eval firstSeen=strftime(ET,""%T %D"")|where ET > relative_time(1501762500, ""-1h@h"" )
+|eval risk_message=""USB Insertion with 1st time seen Vendor ID ("".'columns.vendor_id'.""). Serial number="".'columns.serial'"

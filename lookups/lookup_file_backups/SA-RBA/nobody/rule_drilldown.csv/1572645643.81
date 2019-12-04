@@ -1,0 +1,8 @@
+﻿source,macroname
+Threat - RR - Prohibited Process Detected - System - Rule,rr1
+Threat - RR - DDNS Activity Detected - System - Rule,rr2
+Threat - RR - DNS Activity to External IP Detected - System - Rule,rr3
+Threat - RR - Process Discrepancy Detected - System - Rule,rr4
+Threat - RR - Threat Intel Match on DNS Domain request - System - Rule,rr5
+Threat - RR - USB Insertion with 1st time seen Serial Number - Combined - Rule,rr6
+Threat - RR - USB Insertion with 1st time seen Vendor ID - Combined - Rule,rr7

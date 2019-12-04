@@ -1,0 +1,425 @@
+{
+    "modelName": "Risk",
+    "displayName": "Risk Analysis",
+    "description": "Risk Analysis Data Model",
+    "objectSummary": {
+        "Event-Based": 1,
+        "Transaction-Based": 0,
+        "Search-Based": 0
+    },
+    "objects": [
+        {
+            "objectName": "All_Risk",
+            "displayName": "All Risk Modifiers",
+            "parentName": "BaseEvent",
+            "comment": "",
+            "fields": [
+                {
+                    "fieldName": "creator",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "creator",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "tag",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": true,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "tag",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_message",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_message",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_modifier_count_combined",
+                    "owner": "All_Risk",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_modifier_count_combined",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_modifier_count_system",
+                    "owner": "All_Risk",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_modifier_count_system",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_modifier_count_user",
+                    "owner": "All_Risk",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_modifier_count_user",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_modifier_count_vuln",
+                    "owner": "All_Risk",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_modifier_count_vuln",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_object",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_object",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_object_type",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_object_type",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_rule_confidence",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_rule_confidence",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_rule_confidence_num",
+                    "owner": "All_Risk",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_rule_confidence_num",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_rule_impact",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_rule_impact",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_rule_impact_num",
+                    "owner": "All_Risk",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_rule_impact_num",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_score",
+                    "owner": "All_Risk",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_score",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_system_category",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_system_category",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_system_priority",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_system_priority",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_user_category",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_user_category",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "rule_attack_tactic_technique",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "rule_attack_tactic_technique",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "search_name",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "search_name",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "_time",
+                    "owner": "BaseEvent",
+                    "type": "timestamp",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "_time",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "host",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "host",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "source",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "source",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "sourcetype",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "sourcetype",
+                    "comment": ""
+                }
+            ],
+            "calculations": [
+                {
+                    "outputFields": [
+                        {
+                            "fieldName": "savedsearch_description",
+                            "owner": "",
+                            "type": "string",
+                            "fieldSearch": "",
+                            "required": false,
+                            "multivalue": false,
+                            "hidden": false,
+                            "editable": true,
+                            "displayName": "savedsearch_description",
+                            "comment": "",
+                            "lookupOutputFieldName": "description"
+                        }
+                    ],
+                    "calculationType": "Lookup",
+                    "lookupName": "correlationsearches_lookup",
+                    "comment": "",
+                    "lookupInputs": [
+                        {
+                            "inputField": "source",
+                            "lookupField": "_key"
+                        }
+                    ],
+                    "owner": "All_Risk",
+                    "calculationID": "All_Risk_0description",
+                    "editable": true
+                },
+                {
+                    "outputFields": [
+                        {
+                            "fieldName": "description",
+                            "owner": "All_Risk",
+                            "type": "string",
+                            "fieldSearch": "",
+                            "required": false,
+                            "multivalue": false,
+                            "hidden": false,
+                            "editable": true,
+                            "displayName": "description",
+                            "comment": ""
+                        }
+                    ],
+                    "calculationID": "All_Risk_1description",
+                    "owner": "All_Risk",
+                    "editable": true,
+                    "comment": "",
+                    "calculationType": "Eval",
+                    "expression": "case(isnotnull(description),description,isnotnull(savedsearch_description),savedsearch_description,1=1,\"unknown\")"
+                },
+                {
+                    "outputFields": [
+                        {
+                            "fieldName": "risk_object",
+                            "owner": "All_Risk",
+                            "type": "string",
+                            "fieldSearch": "",
+                            "required": false,
+                            "multivalue": false,
+                            "hidden": false,
+                            "editable": true,
+                            "displayName": "risk_object",
+                            "comment": ""
+                        }
+                    ],
+                    "calculationID": "All_Risk_risk_object",
+                    "owner": "All_Risk",
+                    "editable": true,
+                    "comment": "",
+                    "calculationType": "Eval",
+                    "expression": "if(isnull(risk_object),\"unknown\",risk_object)"
+                },
+                {
+                    "outputFields": [
+                        {
+                            "fieldName": "risk_object_type",
+                            "owner": "All_Risk",
+                            "type": "string",
+                            "fieldSearch": "",
+                            "required": false,
+                            "multivalue": false,
+                            "hidden": false,
+                            "editable": true,
+                            "displayName": "risk_object_type",
+                            "comment": ""
+                        }
+                    ],
+                    "calculationID": "All_Risk_risk_object_type",
+                    "owner": "All_Risk",
+                    "editable": true,
+                    "comment": "",
+                    "calculationType": "Eval",
+                    "expression": "if(isnull(risk_object_type),\"unknown\",risk_object_type)"
+                },
+                {
+                    "outputFields": [
+                        {
+                            "fieldName": "risk_score",
+                            "owner": "All_Risk",
+                            "type": "number",
+                            "fieldSearch": "",
+                            "required": false,
+                            "multivalue": false,
+                            "hidden": false,
+                            "editable": true,
+                            "displayName": "risk_score",
+                            "comment": ""
+                        }
+                    ],
+                    "calculationID": "All_Risk_risk_score",
+                    "owner": "All_Risk",
+                    "editable": true,
+                    "comment": "",
+                    "calculationType": "Eval",
+                    "expression": "if(isnull(risk_score),0,risk_score)"
+                }
+            ],
+            "constraints": [
+                {
+                    "search": "index=risk",
+                    "owner": "All_Risk"
+                }
+            ],
+            "lineage": "All_Risk"
+        }
+    ],
+    "objectNameList": [
+        "All_Risk"
+    ]
+}

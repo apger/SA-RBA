@@ -1,0 +1,105 @@
+<form class="form-horizontal form-complex">
+
+        <div class="control-group">
+                <span class="help-block">
+                                Techniques should be a "|" separated list of ATT&CK techniques such as:
+                                "initial_access - T1200 - Hardware Additions - https://attack.mitre.org/techniques/T1200/
+                                |exfiltration - T1052 - Exfiltration Over Physical Medium - https://attack.mitre.org/techniques/T1052/"
+                                <br><a href="https://attack.mitre.org/techniques/enterprise/" target="_blank"
+                                   title="ATT&CK Info">Learn More <i class="icon-external"></i></a>
+            
+            </span>
+            </div>
+
+    <div class="control-group">
+        <label class="control-label" for="impact">Impact</label>
+	<div class="controls">    
+            <splunk-search-dropdown name="action.rba.param.impact"
+                        search="| inputlookup rba_impact"
+                        label-field="label" value-field="value" />
+        </div>
+    </div> 
+    <div class="control-group">
+            <label class="control-label" for="confidence">Confidence</label>
+	<div class="controls">    
+             <splunk-search-dropdown name="action.rba.param.confidence"
+                            search="| inputlookup rba_confidence"
+                            label-field="label" value-field="value" />
+	</div>
+    </div>
+    <div class="control-group">  
+            <label class="control-label" for="attack_tactic_technique">ATT&CK Techniques</label>
+		<div class="controls">
+	<textarea name="action.rba.param.attack_tactic_technique" id="attack_tactic_technique"/>		
+	</div>
+    </div> 
+
+    <div class="control-group">  
+ <div class="controls">
+            <label class="checkbox" for="modify_user">
+                <input type="checkbox" name="action.rba.param.modify_user" id="modify_user" value="1"/>
+                Modify user object risk? 
+            </label>
+        </div>  
+  
+  <label class="control-label" for="user_field">User Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.user_field" id="user_field" placeholder="user"/>
+      </div>
+  <label class="control-label" for="user_cat">User Category Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.user_cat" id="user_cat" placeholder="executive"/>
+      </div>
+
+    </div> 
+
+    <div class="control-group">  
+ <div class="controls">
+            <label class="checkbox" for="modify_src">
+                <input type="checkbox" name="action.rba.param.modify_src" id="modify_src" value="1"/>
+                Modify System (src) object risk? 
+            </label>
+        </div>  
+  
+  <label class="control-label" for="src_field">Src Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.src_field" id="src_field" placeholder="src"/>
+      </div>
+  <label class="control-label" for="src_cat">Src Category Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.src_cat" id="src_cat" placeholder="pci"/>
+      </div>
+  <label class="control-label" for="src_priority">Src Priority Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.src_priority" id="src_priority" placeholder="high"/>
+      </div>
+
+    </div> 
+
+    <div class="control-group">  
+ <div class="controls">
+            <label class="checkbox" for="modify_dest">
+                <input type="checkbox" name="action.rba.param.modify_dest" id="modify_dest" placeholder="1"/>
+                Modify System (dest) object risk? 
+            </label>
+        </div>  
+  
+  <label class="control-label" for="dest_field">Dest Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.dest_field" id="dest_field" placeholder="dest"/>
+      </div>
+  <label class="control-label" for="dest_cat"> Category Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.dest_cat" id="dest_cat" placeholder="unknown"/>
+      </div>
+  <label class="control-label" for="dest_priority">Dest Priority Field</label>
+      <div class="controls"> 
+         <input type="text" name="action.rba.param.dest_priority" id="dest_priority" placeholder="high"/>
+      </div>
+
+    </div> 
+
+  
+</form>
+
+
