@@ -1,0 +1,6 @@
+[]
+access = read : [ * ], write : [ admin, power ]
+export = system
+version = 7.2.0
+modtime = 1576095388.496547000
+import = DA-ESS-AccessProtection, DA-ESS-ContentUpdate, DA-ESS-EndpointProtection, DA-ESS-IdentityManagement, DA-ESS-NetworkProtection, DA-ESS-ThreatIntelligence, SA-AccessProtection, SA-AuditAndDataProtection, SA-EndpointProtection, SA-IdentityManagement, SA-Investigator, SA-NetworkProtection, SA-ThreatIntelligence, SA-Utils, SA-base64, SA-bots, SA-bots-minimysql, SA-utbox, SplunkEnterpriseSecuritySuite, Splunk_DA-ESS_PCICompliance, Splunk_SA_CIM, Splunk_SA_ExtremeSearch, Splunk_SA_Scientific_Python_linux_x86_64, Splunk_TA_BOTS, Splunk_TA_apache, Splunk_TA_bluecoat-proxysg, Splunk_TA_flowfix, Splunk_TA_juniper, Splunk_TA_mcafee, Splunk_TA_microsoft-cloudservices, Splunk_TA_microsoft-iis, Splunk_TA_nix, Splunk_TA_oracle, Splunk_TA_ossec, Splunk_TA_paloalto, Splunk_TA_rsa-securid, Splunk_TA_sophos, Splunk_TA_sourcefire, Splunk_TA_stream, Splunk_TA_symantec-ep, Splunk_TA_ueba, Splunk_TA_websense-cg, Splunk_TA_windows, TA-Suricata, TA-airdefense, TA-alcatel, TA-bro_json, TA-cef, TA-fortinet, TA-ftp, TA-microsoft-sysmon, TA-nmap, TA-sa-test, TA-stoq, TA-tippingpoint, TA-trendmicro, appsbrowser, search, splunk_instrumentation, viz_donut_c3
