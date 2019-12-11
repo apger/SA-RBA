@@ -1,3 +1,8 @@
 []
 access = read : [ * ], write : [ admin, power ]
 export = system
+
+[essentials_updates]
+export = global
+
+
