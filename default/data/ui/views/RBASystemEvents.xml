@@ -33,7 +33,7 @@
       </html>
     </panel>
     <panel>
-      <viz type="viz_donut_c3.c3donut">
+      <viz type="semicircle_donut.semicircle_donut">
         <search>
           <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
@@ -44,17 +44,13 @@
         </search>
         <option name="drilldown">none</option>
         <option name="refresh.display">progressbar</option>
-        <option name="viz_donut_c3.c3donut.expand">true</option>
-        <option name="viz_donut_c3.c3donut.label_show">true</option>
-        <option name="viz_donut_c3.c3donut.label_value">ratio</option>
-        <option name="viz_donut_c3.c3donut.legend_position">right</option>
-        <option name="viz_donut_c3.c3donut.legend_show">1</option>
-        <option name="viz_donut_c3.c3donut.tooltip_show">true</option>
-        <option name="viz_donut_c3.c3donut.tooltip_value">default</option>
+        <option name="semicircle_donut.semicircle_donut.cutoutPercentage">40</option>
+        <option name="semicircle_donut.semicircle_donut.legendPosition">right</option>
+        <option name="semicircle_donut.semicircle_donut.type">full</option>
       </viz>
     </panel>
     <panel>
-      <viz type="viz_donut_c3.c3donut">
+      <viz type="semicircle_donut.semicircle_donut">
         <search>
           <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
@@ -65,13 +61,9 @@
         </search>
         <option name="drilldown">none</option>
         <option name="refresh.display">progressbar</option>
-        <option name="viz_donut_c3.c3donut.expand">true</option>
-        <option name="viz_donut_c3.c3donut.label_show">true</option>
-        <option name="viz_donut_c3.c3donut.label_value">ratio</option>
-        <option name="viz_donut_c3.c3donut.legend_position">right</option>
-        <option name="viz_donut_c3.c3donut.legend_show">1</option>
-        <option name="viz_donut_c3.c3donut.tooltip_show">true</option>
-        <option name="viz_donut_c3.c3donut.tooltip_value">default</option>
+        <option name="semicircle_donut.semicircle_donut.cutoutPercentage">40</option>
+        <option name="semicircle_donut.semicircle_donut.legendPosition">right</option>
+        <option name="semicircle_donut.semicircle_donut.type">full</option>
       </viz>
     </panel>
   </row>
@@ -197,10 +189,9 @@
           <latest>$timepicker.latest$</latest>
         </search>
         <option name="drilldown">cell</option>
-        <option name="refresh.display">progressbar</option>
         <fields>["Rule","Tactic","count"]</fields>
         <drilldown>
-          <link target="_blank">search?q=%7C%60$row.macroname$($field_system$)%60%20%7C%60comment(%22$row.Rule$%22)%60&amp;earliest=$timepicker.earliest$&amp;latest=$timepicker.latest$</link>
+          <link target="_blank">search?q=%7C%60$row.macroname$($field_system$)%60&amp;earliest=$timepicker.earliest$&amp;latest=$timepicker.latest$</link>
         </drilldown>
       </table>
     </panel>
