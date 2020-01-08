@@ -1,3 +1,12 @@
+
+The below json blob is an example of what can be added to extend the default Risk Analysis datamodel to pickup additional fields typical for a RBA deployment.  
+
+Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/models
+
+
+
+
+
 {
     "modelName": "Risk",
     "displayName": "Risk Analysis",
