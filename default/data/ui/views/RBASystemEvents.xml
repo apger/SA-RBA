@@ -17,7 +17,7 @@
       <single>
         <title>Aggregate Risk Score</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|stats sum(risk_score) as "Aggregate Risk Score"</query>
+          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|stats sum(risk_score) as "Aggregate Risk Score"</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -34,8 +34,9 @@
     </panel>
     <panel>
       <viz type="semicircle_donut.semicircle_donut">
+        <title>ATT&amp;CK Tactics</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|makemv delim="|" rule_attack_tactic_technique
+          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
 |rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
 |stats count as "ATT&amp;CK Tactics" by tactic</query>
@@ -44,15 +45,16 @@
         </search>
         <option name="drilldown">none</option>
         <option name="refresh.display">progressbar</option>
-        <option name="semicircle_donut.semicircle_donut.cutoutPercentage">40</option>
+        <option name="semicircle_donut.semicircle_donut.cutoutPercentage">50</option>
         <option name="semicircle_donut.semicircle_donut.legendPosition">right</option>
         <option name="semicircle_donut.semicircle_donut.type">full</option>
       </viz>
     </panel>
     <panel>
       <viz type="semicircle_donut.semicircle_donut">
+        <title>ATT&amp;CK Techniques</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|makemv delim="|" rule_attack_tactic_technique
+          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
 |rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
 |stats count as "ATT&amp;CK Techniques" by technique</query>
@@ -61,7 +63,7 @@
         </search>
         <option name="drilldown">none</option>
         <option name="refresh.display">progressbar</option>
-        <option name="semicircle_donut.semicircle_donut.cutoutPercentage">40</option>
+        <option name="semicircle_donut.semicircle_donut.cutoutPercentage">50</option>
         <option name="semicircle_donut.semicircle_donut.legendPosition">right</option>
         <option name="semicircle_donut.semicircle_donut.type">full</option>
       </viz>
@@ -89,7 +91,7 @@
       <chart>
         <title>Risk Attributions by MITRE ATT&amp;CK Tactic</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|makemv delim="|" rule_attack_tactic_technique
+          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
 |rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
 |timechart span=15m count by tactic</query>
@@ -135,7 +137,7 @@
       <chart>
         <title>Risk Attributions by MITRE ATT&amp;CK Technique</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|makemv delim="|" rule_attack_tactic_technique
+          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
 |rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
 |timechart span=15m count by technique</query>
@@ -184,7 +186,7 @@
       <table>
         <title>click on the row to view original events associated with the risk rule</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"|stats values(tactic) as Tactic count(source) as count min(_time) as firstSeen by source|lookup rule_drilldown source OUTPUT macroname|rename source as Rule|sort - firstSeen</query>
+          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"|stats values(tactic) as Tactic count(search_name) as count min(_time) as firstSeen by search_name|lookup rule_drilldown source AS search_name OUTPUT macroname|rename search_name as Rule|sort - firstSeen</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -214,7 +216,7 @@
         <title>Related System Risk Objects</title>
         <search>
           <query>index=risk (src_system="$field_system$" OR dest_system="$field_system$") risk_object!="$field_system$" risk_object_type="system"
-| stats count, values(src_system) as src_system, values(dest_system) as dest_system, values(source) as source by risk_object
+| stats count, values(src_system) as src_system, values(dest_system) as dest_system, values(search_name) as source by risk_object
 | sort - count</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
@@ -231,7 +233,7 @@
         <title>Related User Risk Objects</title>
         <search>
           <query>index=risk src_system="$field_system$" risk_object!="$field_system$" risk_object_type="user"
-| stats count, values(src_user) as src_user, values(dest_system) as dest_system, values(source) as source by risk_object
+| stats count, values(src_user) as src_user, values(dest_system) as dest_system, values(search_name) as source by risk_object
 | sort - count</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
@@ -249,7 +251,7 @@
       <title>Specific Risk Messages associated with System=$field_system$</title>
       <table>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ source="Threat*"|stats count by risk_message</query>
+          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|stats count by risk_message</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -264,11 +266,11 @@
       <event>
         <title>Risk Attribution Events</title>
         <search>
-          <query>index=risk risk_object=$field_system$ source="Threat*" source="Threat*" risk_rule_impact="*" risk_rule_confidence="*"</query>
+          <query>index=risk risk_object=$field_system$ search_name="Threat*" risk_rule_impact="*" risk_rule_confidence="*"</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
-        <fields>source, risk_rule_impact, risk_rule_confidence</fields>
+        <fields>search_name, risk_rule_impact, risk_rule_confidence</fields>
         <option name="list.drilldown">none</option>
         <option name="raw.drilldown">none</option>
         <option name="refresh.display">progressbar</option>

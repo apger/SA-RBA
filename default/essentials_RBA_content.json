@@ -1,5 +1,5 @@
 {
-    "buttercuplabs_detect_bad_ponies": {
+    "buttercuplabs_detect_bad_ponies2": {
         "name": "RR - USB Insertion with 1st time seen Vendor ID - Combined",
         "inSplunk": "yes",
         "journey": "Stage_1",
