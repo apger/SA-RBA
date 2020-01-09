@@ -12,7 +12,7 @@
         "category": "Endpoint Compromise",
         "description": "Attribute Risk to both Users and Systems when a USB insertion with a never before seen Vendor ID is seen for the very first time.  Uses OSQuery as a datasource.",
         "domain": "Endpoint",
-        "killchain": Delivery,
+        "killchain": "Delivery",
         "SPLEase": "None",
         "searchkeywords": "RBA USB Vendor BOTSv2",
         "advancedtags": "RBA",
