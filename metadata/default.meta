@@ -1,6 +1,7 @@
 []
 access = read : [ * ], write : [ admin, power ]
 export = system
+import = semicircle_donut
 
 [essentials_updates]
 export = system
