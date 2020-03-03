@@ -1,0 +1,2 @@
+﻿search_name,drilldown_search
+Threat - RR - Potential Phish With Attachment - User - Rule,"| from datamodel:Email.All_Email| search (file_name=*.zip"" OR file_name=""*.doc"" OR file_name=""*.xls"" OR file_name=""*.docm"" OR file_name=""*.xlsm""|mvexpand recipient|join type=left recipient [|from datamodel:""Identity_Management.All_Identities""|search email""*froth.ly""|fields email,identity|mvexpand identity|where like(identity,""%frothly\\%"")|eval identity=mvindex(split(identity,""\\""),1)|rename email as recipient, identity as src_user]|search src_user=""billy.tun"")"""
