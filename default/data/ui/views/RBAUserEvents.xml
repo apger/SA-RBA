@@ -190,19 +190,22 @@
         <title>click on the row to view original events associated with the risk rule</title>
         <search>
           <query>| from datamodel:"Risk.All_Risk" 
-| search risk_object=$field_user$ search_name="Threat*" 
+| search risk_object=billy.tun search_name="Threat*" 
 | rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)" 
-| stats values(tactic) as Tactic count(search_name) as count min(_time) as firstSeen by search_name 
-| lookup rule_drilldown source as search_name OUTPUT macroname 
+| stats values(tactic) as Tactic count(search_name) as count min(_time) as firstSeen by search_name,risk_object 
+| lookup RBA_drilldown_searches.csv search_name
+|eval drilldown_search=replace(drilldown_search,"REPLACEME",risk_object)
 | rename search_name as Rule 
 | sort - firstSeen</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
+        <option name="count">10</option>
         <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
         <fields>["Rule","Tactic","count"]</fields>
         <drilldown>
-          <link target="_blank">search?q=%7C%60$row.macroname$($field_user$)%60&amp;earliest=$timepicker.earliest$&amp;latest=$timepicker.latest$</link>
+          <link target="_blank">search?q=$row.drilldown_search$&amp;earliest=$timepicker.earliest$&amp;latest=$timepicker.latest$</link>
         </drilldown>
       </table>
     </panel>

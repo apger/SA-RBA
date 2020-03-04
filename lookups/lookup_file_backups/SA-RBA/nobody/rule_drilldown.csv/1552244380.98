@@ -1,8 +1,0 @@
-﻿source,search
-Threat - RR - Prohibited Process Detected - System - Rule,|search index=_internal|head 1
-Threat - RR - DDNS Activity Detected - System - Rule,index=_internal|head 2
-Threat - RR - DNS Activity to External IP Detected - System - Rule,index=_internal|head 3
-Threat - RR - Process Discrepancy Detected - System - Rule,index=_internal|head 4
-Threat - RR - Threat Intel Match on DNS Domain request - System - Rule,index=_internal|head 5
-Threat - RR - USB Insertion with 1st time seen Serial Number - Combined - Rule,index=_internal|head 6
-Threat - RR - USB Insertion with 1st time seen Vendor ID - Combined - Rule,"index=""botsv2"" sourcetype=osquery_results  TERM(USB) name=""pack_hardware-monitoring_usb_devices"" action=""added"" host=""$field_system$""|eval rule_attack_tactic_technique=""initial_access - T1200 - Hardware Additions - https://attack.mitre.org/techniques/T1200/"""
