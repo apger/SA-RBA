@@ -17,7 +17,8 @@
       <single>
         <title>Aggregate Risk Score</title>
         <search>
-          <query>index=risk risk_object=$field_user$ search_name="Threat*"|stats sum(risk_score) as "Aggregate Risk Score"</query>
+          <query>| from datamodel:"Risk.All_Risk" 
+| search risk_object=$field_user$ search_name="Threat*"|stats sum(risk_score) as "Aggregate Risk Score"</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -36,7 +37,8 @@
       <viz type="semicircle_donut.semicircle_donut">
         <title>ATT&amp;CK Tactics</title>
         <search>
-          <query>index=risk risk_object=$field_user$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
+          <query>| from datamodel:"Risk.All_Risk"
+|search risk_object=$field_user$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
 |rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
 |stats count as "ATT&amp;CK Tactics" by tactic</query>
@@ -54,7 +56,8 @@
       <viz type="semicircle_donut.semicircle_donut">
         <title>ATT&amp;CK Techniques</title>
         <search>
-          <query>index=risk risk_object=$field_user$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
+          <query>| from datamodel:"Risk.All_Risk"
+|search risk_object=$field_user$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
 |mvexpand rule_attack_tactic_technique
 |rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
 |stats count as "ATT&amp;CK Techniques" by technique</query>
@@ -264,7 +267,8 @@
       <table>
         <title>Specific Risk Messages associated with User=$field_user$</title>
         <search>
-          <query>index=risk risk_object=$field_user$ search_name="Threat*"|stats count by risk_message</query>
+          <query>| from datamodel:"Risk.All_Risk"
+|search risk_object=$field_user$ search_name="Threat*"|stats count by risk_message</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -279,7 +283,9 @@
       <event>
         <title>Risk Attribution Events</title>
         <search>
-          <query>index=risk risk_object=$field_user$ search_name="Threat*" impact="*" confidence="*"</query>
+          <query>|from datamodel:"Risk.All_Risk"
+|search risk_object=$field_user$ search_name="Threat*"
+|table _time search_name risk_rule_confidence risk_rule_impact</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>

@@ -1,10 +1,6 @@
+The below json blob is an example of what can be added to extend the default Risk Analysis datamodel to pickup additional fields typical for a RBA deployment.
 
-The below json blob is an example of what can be added to extend the default Risk Analysis datamodel to pickup additional fields typical for a RBA deployment.  
-
-Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/models
-
-
-
+Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/models/Risk.json
 
 
 {
@@ -60,18 +56,6 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "comment": ""
                 },
                 {
-                    "fieldName": "risk_modifier_count_combined",
-                    "owner": "All_Risk",
-                    "type": "number",
-                    "fieldSearch": "",
-                    "required": false,
-                    "multivalue": false,
-                    "hidden": false,
-                    "editable": true,
-                    "displayName": "risk_modifier_count_combined",
-                    "comment": ""
-                },
-                {
                     "fieldName": "risk_modifier_count_system",
                     "owner": "All_Risk",
                     "type": "number",
@@ -105,30 +89,6 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "hidden": false,
                     "editable": true,
                     "displayName": "risk_modifier_count_vuln",
-                    "comment": ""
-                },
-                {
-                    "fieldName": "risk_object",
-                    "owner": "All_Risk",
-                    "type": "string",
-                    "fieldSearch": "",
-                    "required": false,
-                    "multivalue": false,
-                    "hidden": false,
-                    "editable": true,
-                    "displayName": "risk_object",
-                    "comment": ""
-                },
-                {
-                    "fieldName": "risk_object_type",
-                    "owner": "All_Risk",
-                    "type": "string",
-                    "fieldSearch": "",
-                    "required": false,
-                    "multivalue": false,
-                    "hidden": false,
-                    "editable": true,
-                    "displayName": "risk_object_type",
                     "comment": ""
                 },
                 {
@@ -180,18 +140,6 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "comment": ""
                 },
                 {
-                    "fieldName": "risk_score",
-                    "owner": "All_Risk",
-                    "type": "number",
-                    "fieldSearch": "",
-                    "required": false,
-                    "multivalue": false,
-                    "hidden": false,
-                    "editable": true,
-                    "displayName": "risk_score",
-                    "comment": ""
-                },
-                {
                     "fieldName": "risk_system_category",
                     "owner": "All_Risk",
                     "type": "string",
@@ -225,6 +173,18 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "hidden": false,
                     "editable": true,
                     "displayName": "risk_user_category",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "risk_user_priority",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "risk_user_priority",
                     "comment": ""
                 },
                 {

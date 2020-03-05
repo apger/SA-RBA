@@ -275,7 +275,9 @@
       <event>
         <title>Risk Attribution Events</title>
         <search>
-          <query>index=risk risk_object=$field_system$ search_name="Threat*" risk_rule_impact="*" risk_rule_confidence="*"</query>
+          <query>|from datamodel:"Risk.All_Risk"
+|search risk_object=$field_system$ search_name="Threat*"
+|table _time search_name risk_rule_confidence risk_rule_impact</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
