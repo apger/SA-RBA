@@ -17,7 +17,7 @@
       <single>
         <title>Aggregate Risk Score</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|stats sum(risk_score) as "Aggregate Risk Score"</query>
+          <query>| tstats `summariesonly` sum(All_Risk.risk_score) as "Aggregate Risk Score" from datamodel=Risk where All_Risk.risk_object=$field_system$ source="Threat*"</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -36,10 +36,12 @@
       <viz type="semicircle_donut.semicircle_donut">
         <title>ATT&amp;CK Tactics</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
-|mvexpand rule_attack_tactic_technique
-|rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
-|stats count as "ATT&amp;CK Tactics" by tactic</query>
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_system$ source="Threat*" by All_Risk.rule_attack_tactic_technique
+| rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
+| makemv delim="|" rule_attack_tactic_technique
+| mvexpand rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;technique_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
+| stats sum(count) as "ATT&amp;CK Tactics" by tactic</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -54,10 +56,12 @@
       <viz type="semicircle_donut.semicircle_donut">
         <title>ATT&amp;CK Techniques</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
-|mvexpand rule_attack_tactic_technique
-|rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
-|stats count as "ATT&amp;CK Techniques" by technique</query>
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_system$ source="Threat*" by All_Risk.rule_attack_tactic_technique
+| rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
+| makemv delim="|" rule_attack_tactic_technique
+| mvexpand rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;technique_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
+| stats sum(count) as "ATT&amp;CK Techniques" by technique</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -91,10 +95,12 @@
       <chart>
         <title>Risk Attributions by MITRE ATT&amp;CK Tactic</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
-|mvexpand rule_attack_tactic_technique
-|rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
-|timechart span=15m count by tactic</query>
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_system$ source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
+| rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
+| makemv delim="|" rule_attack_tactic_technique
+| mvexpand rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;technique_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
+| timechart span=15m sum(count) as count by tactic</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -118,7 +124,7 @@
         <option name="charting.chart.nullValueMode">zero</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.chart.stackMode">stacked</option>
         <option name="charting.chart.style">shiny</option>
         <option name="charting.drilldown">none</option>
         <option name="charting.layout.splitSeries">0</option>
@@ -137,10 +143,12 @@
       <chart>
         <title>Risk Attributions by MITRE ATT&amp;CK Technique</title>
         <search>
-          <query>|from datamodel:"Risk.All_Risk"|search risk_object=$field_system$ search_name="Threat*"|makemv delim="|" rule_attack_tactic_technique
-|mvexpand rule_attack_tactic_technique
-|rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
-|timechart span=15m count by technique</query>
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_system$ source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
+| rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
+| makemv delim="|" rule_attack_tactic_technique
+| mvexpand rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;technique_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
+| timechart span=15m sum(count) as count by technique</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -164,7 +172,7 @@
         <option name="charting.chart.nullValueMode">zero</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.chart.stackMode">stacked</option>
         <option name="charting.chart.style">shiny</option>
         <option name="charting.drilldown">none</option>
         <option name="charting.layout.splitSeries">0</option>
