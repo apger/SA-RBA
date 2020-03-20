@@ -212,6 +212,30 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "comment": ""
                 },
                 {
+                    "fieldName": "threat_object",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_object",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "threat_object_type",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "threat_object_type",
+                    "comment": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -377,6 +401,28 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "comment": "",
                     "calculationType": "Eval",
                     "expression": "if(isnull(risk_score),0,risk_score)"
+                },
+                {
+                    "outputFields": [
+                        {
+                            "fieldName": "TESTMODE",
+                            "owner": "All_Risk",
+                            "type": "boolean",
+                            "fieldSearch": "",
+                            "required": false,
+                            "multivalue": false,
+                            "hidden": false,
+                            "editable": true,
+                            "displayName": "TESTMODE",
+                            "comment": ""
+                        }
+                    ],
+                    "calculationID": "yoha8s3qf89",
+                    "owner": "All_Risk",
+                    "editable": true,
+                    "comment": "",
+                    "calculationType": "Eval",
+                    "expression": "if(isnull(TESTMODE), 0, TESTMODE)"
                 }
             ],
             "constraints": [
