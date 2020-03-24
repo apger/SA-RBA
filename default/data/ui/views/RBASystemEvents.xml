@@ -31,6 +31,10 @@
       	<style>.btn-secondary { margin: 5px 10px 5px 0; }</style>
         <a href="/app/SplunkEnterpriseSecuritySuite/asset_artifacts?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.s_asset=$field_system$/" class="btn btn-secondary" target="_BLANK">Investigate Asset Artifacts</a>
       </html>
+      <html>
+      	<style>.btn-secondary { margin: 5px 10px 5px 0; }</style>
+        <a href="/app/SplunkEnterpriseSecuritySuite/asset_investigator?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.asset=$field_system$/" class="btn btn-secondary" target="_BLANK">Asset Investigator (swimlanes)</a>
+      </html>
     </panel>
     <panel>
       <viz type="semicircle_donut.semicircle_donut">
