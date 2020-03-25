@@ -19,3 +19,41 @@ Threat - RR - System Information Discovery - Combined - Rule,"index=botsv2 sourc
 Threat - RR - Threat Intel File Activity - System - Rule,"|from datamodel:""Threat_Intelligence"".""Threat_Activity"" | search threat_collection=""file"" | rename src as src_ip, dest as dest_ip | lookup dnslookup clientip as dest_ip OUTPUT clienthost as dest_dns | eval dest_system=coalesce(dest_dns,dest_ip) | lookup dhcpLogs dest_ip as src_ip OUTPUT dest_nt_host as src_dhcp | join type=left src_ip [| inputlookup frothly_assets | fields ip dns | rename ip as src_ip, dns as src_dns ] | eval src_system=coalesce(src_dhcp,src_dns,src_ip) |search src_system=""REPLACEME"" OR dest_system=""REPLACEME"""
 Threat - RR - User Account Changes - Combined - Rule,"|from datamodel:Change_Analysis.All_Changes|search tag=""account"" host=""wrk-btun""|rex max_match=0 ""Account Name:\W+(?<user>(.+))""|search user=""REPLACEME"" OR dest=""REPLACEME"""
 Threat - RR - Potential Phish With Attachment - User - Rule,"| from datamodel:Email.All_Email| search (file_name=""*.zip"" OR file_name=""*.doc"" OR file_name=""*.xls"" OR file_name=""*.docm"" OR file_name=""*.xlsm"")|mvexpand recipient|join type=left recipient [|from datamodel:""Identity_Management.All_Identities""|search email=""*froth.ly""|fields email,identity|mvexpand identity|where like(identity,""%frothly\\%"")|eval identity=mvindex(split(identity,""\\""),1)|rename email as recipient, identity as src_user]|search src_user=REPLACEME"
+Threat - RR - Command and Control Activity Detected - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=CommandAndControl (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Credential Theft Tool Detected - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=CredentialAccess (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Discovery tool or technique detected  - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=Discovery (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Suspisious Process or DLL detected - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=DefenseEvasion (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Suspicious activity or known framework detected  - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=Execution (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Malware detected by Windows Defender  - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=Malware (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Suspicious service or registry change detected  - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=Persistence (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Suspicious activity related to escalation of privs has been detected - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=PrivilegeEscalation (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Suspicious CLI command - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=SuspiciousActivity (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Suspicious CLI command related to information gathering - Combined - Rule,index=botsv4 sourcetype=wdtap:alerts Category=Collection (LogOnUsers=*REPLACEME* OR MachineName=*REPLACEME*)
+Threat - RR - Remotely Query Login Sessions - Process - Combined -Rule,NEED
+Threat - RR - Credential Dumping - Process Access - System  - Rule,NEED
+Threat - RR - Credential Dumping - Registry - System - Rule,NEED
+Threat - RR - Accessibility Features - Registry - System - Rule,NEED
+Threat - RR - System Network Configuration Discovery - Combined - Rule,NEED
+Threat - RR - Remote System Discovery - Process - Combined - Rule,NEED
+Threat - RR - System Owner/User Discovery - Combined - Rule,NEED
+Threat - RR - Masquerading - Renamed Binary - Combined - Rule,NEED
+Threat - RR - Commonly Used Port - Combined - Rule,NEED
+Threat - RR - System Network Connections Discovery - Combined - Rule,NEED
+Threat - RR - Scheduled Task - Process - Combined - Rule,NEED
+Threat - RR - Registry Run Keys or Start Folder - Syetem - Rule,NEED
+Threat - RR - Permission Groups Discovery - Process - Combined - Rule,NEED
+Threat - RR - Indicator Removal on Host - Combined - Rule,NEED
+Threat - RR - Data Staged - Process - Combined - Rule,NEED
+Threat - RR - Remote Desktop Protocol - Network - Combined - Rule,NEED
+Threat - RR - Rundll32 - Combined - Rule,NEED
+Threat - RR - PowerShell - Combined - Rule,NEED
+Threat - RR - PowerShell Downloads - Process - Combined - Rule,NEED
+Threat - RR - Bypass User Account Control - Process - Combined - Rule,NEED
+Threat - RR - Process Hollowing - Combined - Rule,NEED
+Threat - RR - File Deletion - Combined - Rule,NEED
+Threat - RR - Bypassing Application Whitelisting with Regsvr32 - Combined - Rule,NEED
+Threat - RR - Trusted Developer Utilities - Combined - Rule,NEED
+Threat - RR - Network Share Discovery - Process - Combined - Rule,NEED
+Threat - RR - Create Account - Combined - Rule,NEED
+Threat - RR - MSHTA - Network - Combined - Rule,NEED
+Threat - RR - MSHTA - Process -  Combined - Rule,NEED
