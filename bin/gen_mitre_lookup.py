@@ -29,15 +29,13 @@ if __name__ == '__main__':
                 phase_name.append(x['phase_name'])
 
             result = {}
-            result["mitre_att&ck_id"] = i['external_references'][0]['external_id']
-            result["mitre_att&ck_tactic"] = phase_name
-            result["mitre_att&ck_technique"] = i['name']
-            result["mitre_att&ck_description"] = i['description']
-            result["mitre_att&ck_url"] = i['external_references'][0]['url']
+            result["mitre_id"] = i['external_references'][0]['external_id']
+            result["mitre_tactic"] = phase_name
+            result["mitre_technique"] = i['name']
+            result["mitre_description"] = i['description']
+            result["mitre_url"] = i['external_references'][0]['url']
             if "x_mitre_detection" in i:
-                result["x_mitre_detection"] = i['x_mitre_detection']
-            #print i['x_mitre_detection']
-            #print "================"
+                result["mitre_detection"] = i['x_mitre_detection']
             results.append(result)
 
 si.outputResults(results)
