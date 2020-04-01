@@ -12,12 +12,13 @@ import requests
 import splunk.mining.dcutils as dcu
 
 logger = dcu.getLogger()
-app = 'TA-RBA_support'
+app = "SA-RBA"
 results = []
 
 if __name__ == '__main__':
-    logger.info('start')
+    logger.info("SA-RBA gen_mitre_lookup.py Starting")
     url = 'https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json'
+    logger.info("SA-RBA gen_mitre_lookup.py requesting enterprise ATT&CK dict from url:{}".format(url))
     req = requests.Session()
     req.headers.update({'Accept': 'application/json'})
     jsonData = json.loads(req.get(url).content)
@@ -27,7 +28,6 @@ if __name__ == '__main__':
             phase_name = []
             for x in i['kill_chain_phases']:
                 phase_name.append(x['phase_name'])
-
             result = {}
             result["mitre_id"] = i['external_references'][0]['external_id']
             result["mitre_tactic"] = phase_name
@@ -37,5 +37,7 @@ if __name__ == '__main__':
             if "x_mitre_detection" in i:
                 result["mitre_detection"] = i['x_mitre_detection']
             results.append(result)
+
+    logger.info("SA-RBA gen_mitre_lookup.py finished fetching {} objects".format(len(results)))
 
 si.outputResults(results)
