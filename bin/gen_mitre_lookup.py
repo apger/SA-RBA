@@ -6,10 +6,21 @@
 
 import sys
 import splunk.Intersplunk as si
-import splunk.entity as entity
+#import splunk.entity as entity
 import json
 import requests
 import splunk.mining.dcutils as dcu
+
+
+import six
+
+def dispatch_types(value):
+    if isinstance(value, six.integer_types):
+        handle_integer(value)
+    elif isinstance(value, six.class_types):
+        handle_class(value)
+    elif isinstance(value, six.string_types):
+        handle_string(value)
 
 logger = dcu.getLogger()
 app = "SA-RBA"
@@ -40,4 +51,5 @@ if __name__ == '__main__':
 
     logger.info("SA-RBA gen_mitre_lookup.py finished fetching {} objects".format(len(results)))
 
+#print(results)
 si.outputResults(results)
