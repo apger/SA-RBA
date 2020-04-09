@@ -82,7 +82,7 @@
       <table>
         <title>Asset Details</title>
         <search>
-          <query>| `assets` | search [| makeresults | eval key="$field_system$" | makemv delim=",",key | mvexpand key] | rename key AS asset_name |table asset_name priority bunit category owner city country ip mac nt_host dns</query>
+          <query>| `assets` | search dns="$field_system$" | rename key AS asset_name |table asset_name priority bunit category owner city country ip mac nt_host dns</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
