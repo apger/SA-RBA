@@ -74,7 +74,7 @@
   </row>
   <row>
     <panel>
-      <title>Risk Rule Components Audit</title>
+      <title>Risk Rule Components Audit - Only inconsistant rules displayed</title>
       <table>
         <search>
           <query>| rest splunk_server=local /servicesNS/-/-/saved/searches 
