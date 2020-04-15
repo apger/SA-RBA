@@ -31,10 +31,6 @@
       	<style>.btn-secondary { margin: 5px 10px 5px 0; }</style>
         <a href="/app/SplunkEnterpriseSecuritySuite/asset_artifacts?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.s_asset=$field_system$/" class="btn btn-secondary" target="_BLANK">Investigate Asset Artifacts</a>
       </html>
-      <html>
-      	<style>.btn-secondary { margin: 5px 10px 5px 0; }</style>
-        <a href="/app/SplunkEnterpriseSecuritySuite/asset_investigator?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.asset=$field_system$/" class="btn btn-secondary" target="_BLANK">Asset Investigator (swimlanes)</a>
-      </html>
     </panel>
     <panel>
       <viz type="semicircle_donut.semicircle_donut">
@@ -82,7 +78,7 @@
       <table>
         <title>Asset Details</title>
         <search>
-          <query>| `assets` | search dns="$field_system$" | rename key AS asset_name |table asset_name priority bunit category owner city country ip mac nt_host dns</query>
+          <query>| `assets` | search [| makeresults | eval key="$field_system$" | makemv delim=",",key | mvexpand key] | rename key AS asset_name |table asset_name priority bunit category owner city country ip mac nt_host dns</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -242,6 +238,7 @@
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
+        <option name="count">10</option>
         <option name="drilldown">row</option>
         <option name="refresh.display">progressbar</option>
         <drilldown>
@@ -268,6 +265,24 @@
     </panel>
   </row>
   <row>
+    <panel>
+      <table>
+        <title>Related Threat Objects</title>
+        <search>
+          <query>index=risk risk_object="$field_system$"
+| stats count by threat_object, threat_object_type, risk_object
+| sort - count</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">row</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/SA-RBA/rba_attribution__threat_object?form.timepicker.earliest=$timepicker.earliest$&amp;form.timepicker.latest=$timepicker.latest$&amp;form.threat_object=$row.threat_object$&amp;form.threat_object_type=$row.threat_object_type$</link>
+        </drilldown>
+      </table>
+    </panel>
     <panel>
       <title>Specific Risk Messages associated with System=$field_system$</title>
       <table>

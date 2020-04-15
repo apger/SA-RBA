@@ -1,14 +1,29 @@
 <form>
-  <label>RBA attribution - User</label>
+  <label>RBA attribution - Threat Object</label>
   <fieldset submitButton="true" autoRun="true">
-    <input type="text" token="field_user" searchWhenChanged="true">
-      <label>User</label>
+    <input type="text" token="threat_object" searchWhenChanged="true">
+      <label>Threat Object</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="dropdown" token="threat_object_type">
+      <label>Threat Object Type</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <fieldForLabel>threat_object_type</fieldForLabel>
+      <fieldForValue>threat_object_type</fieldForValue>
+      <search>
+        <query>index=risk  | dedup threat_object_type | sort threat_object_type | table threat_object_type</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
     </input>
     <input type="time" token="timepicker">
       <label>Time Range</label>
       <default>
-        <earliest>-24h@h</earliest>
-        <latest>now</latest>
+        <earliest>0</earliest>
+        <latest></latest>
       </default>
     </input>
   </fieldset>
@@ -17,7 +32,7 @@
       <single>
         <title>Aggregate Risk Score</title>
         <search>
-          <query>|tstats `summariesonly` sum(All_Risk.risk_score) as "Aggregate Risk Score" from datamodel=Risk where All_Risk.risk_object=$field_user$ source="Threat*"</query>
+          <query>|tstats `summariesonly` sum(All_Risk.risk_score) as "Aggregate Risk Score" from datamodel=Risk where All_Risk.threat_object="*$threat_object$*" All_Risk.threat_object_type="$threat_object_type$" source="Threat*"</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -29,14 +44,14 @@
       </single>
       <html>
       	<style>.btn-secondary { margin: 5px 10px 5px 0; }</style>
-        <a href="/app/SplunkEnterpriseSecuritySuite/ident_by_name?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.s_ident=$field_user$/" class="btn btn-secondary" target="_BLANK">Investigate Identity Artifacts</a>
+        <a href="/app/SplunkEnterpriseSecuritySuite/file_artifacts?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.s_file=$threat_object$/" class="btn btn-secondary" target="_BLANK">Investigate Threat Object</a>
       </html>
     </panel>
     <panel>
       <viz type="semicircle_donut.semicircle_donut">
         <title>ATT&amp;CK Tactics</title>
         <search>
-          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_user$ source="Threat*" by All_Risk.rule_attack_tactic_technique
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.threat_object="*$threat_object$*" All_Risk.threat_object_type="$threat_object_type$" source="Threat*" by All_Risk.rule_attack_tactic_technique
 | rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
 | makemv delim="|" rule_attack_tactic_technique
 | mvexpand rule_attack_tactic_technique
@@ -56,7 +71,7 @@
       <viz type="semicircle_donut.semicircle_donut">
         <title>ATT&amp;CK Techniques</title>
         <search>
-          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_user$ source="Threat*" by All_Risk.rule_attack_tactic_technique
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.threat_object="*$threat_object$*" All_Risk.threat_object_type="$threat_object_type$" source="Threat*" by All_Risk.rule_attack_tactic_technique
 | rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
 | makemv delim="|" rule_attack_tactic_technique
 | mvexpand rule_attack_tactic_technique
@@ -75,30 +90,10 @@
   </row>
   <row>
     <panel>
-      <table>
-        <title>Identity Details</title>
-        <search>
-          <query>| from datamodel:"Identity_Management.All_Identities" | search identity="$field_user$" |eval fullname=if(isnull(first),last,first." ".last) |table fullname identity email phone priority bunit category work_city work_country</query>
-          <earliest>$timepicker.earliest$</earliest>
-          <latest>$timepicker.latest$</latest>
-        </search>
-        <option name="drilldown">cell</option>
-        <option name="refresh.display">progressbar</option>
-        <format type="color" field="priority">
-          <colorPalette type="map">{"critical":0xD25B3B,"high":0xFF8800,"medium":0xF0BE1B,"low":0x98BF3B,"informational":0x5378AD,"unknown":0x999999}</colorPalette>
-        </format>
-        <drilldown>
-          <link target="_blank">/app/SplunkEnterpriseSecuritySuite/identity_center?form.username=$row.email$</link>
-        </drilldown>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
       <chart>
         <title>Risk Attributions by MITRE ATT&amp;CK Tactic</title>
         <search>
-          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_user$ source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.threat_object=$threat_object$ All_Risk.threat_object_type=$threat_object_type$ source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
 | rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
 | makemv delim="|" rule_attack_tactic_technique
 | mvexpand rule_attack_tactic_technique
@@ -146,7 +141,7 @@
       <chart>
         <title>Risk Attributions by MITRE ATT&amp;CK Technique</title>
         <search>
-          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_user$ source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
+          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.threat_object="*$threat_object$*" All_Risk.threat_object_type="$threat_object_type$" source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
 | rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
 | makemv delim="|" rule_attack_tactic_technique
 | mvexpand rule_attack_tactic_technique
@@ -193,12 +188,12 @@
   </row>
   <row>
     <panel>
-      <title>Risk Rules triggered for the User (order by earliest seen)</title>
+      <title>Risk Rules triggered for the Threat Object (order by earliest seen)</title>
       <table>
         <title>click on the row to view original events associated with the risk rule</title>
         <search>
           <query>| from datamodel:"Risk.All_Risk" 
-| search risk_object=billy.tun search_name="Threat*" 
+| search threat_object="*$threat_object$*" threat_object_type="$threat_object_type$" search_name="Threat*" 
 | rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;tactic_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)" 
 | stats values(tactic) as Tactic count(search_name) as count min(_time) as firstSeen by search_name,risk_object 
 | lookup RBA_drilldown_searches.csv search_name
@@ -218,10 +213,10 @@
       </table>
     </panel>
     <panel>
-      <title>Notables for User</title>
+      <title>Notables for Threat Object</title>
       <table>
         <search>
-          <query>`notable`|search risk_object=$field_user$|`notable_owners`|search _raw=*|rex field=_raw "search_name=.(?&lt;search_name&gt;[^\"]+)\""|table _time,owner,search_name</query>
+          <query>`notable`|search | search threat_object=$threat_object$ threat_object_type=$threat_object_type$ |`notable_owners`|search _raw=*|rex field=_raw "search_name=.(?&lt;search_name&gt;[^\"]+)\""|table _time,owner,search_name</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -236,8 +231,8 @@
       <table>
         <title>Related System Risk Objects</title>
         <search>
-          <query>index=risk src_user="$field_user$" risk_object!="$field_user$" risk_object_type="system"
-| stats count, values(src_system) as src_system, values(dest_system) as dest_system, values(search_name) as source by risk_object
+          <query>index=risk threat_object="*$threat_object$*" threat_object_type="$threat_object_type$" risk_object_type="system"
+| stats count, values(src_system) as src_system, values(dest_system) as dest_system, values(search_name) as source by threat_object
 | sort - count</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
@@ -253,8 +248,8 @@
       <table>
         <title>Related User Risk Objects</title>
         <search>
-          <query>index=risk src_user="$field_user$" risk_object!="$field_user$" risk_object_type="user"
-| stats count, values(src_user) as src_user, values(dest_system) as dest_system, values(search_name) as source by risk_object
+          <query>index=risk threat_object="*$threat_object$*" threat_object_type="$threat_object_type$" risk_object_type="user"
+| stats count, values(user) as user, values(src_user) as src_user, values(search_name) as source by threat_object
 | sort - count</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
@@ -270,27 +265,10 @@
   <row>
     <panel>
       <table>
-        <title>Related Threat Objects</title>
-        <search>
-          <query>index=risk risk_object="$field_user$"
-| stats count by threat_object, threat_object_type, risk_object
-| sort - count</query>
-          <earliest>$timepicker.earliest$</earliest>
-          <latest>$timepicker.latest$</latest>
-        </search>
-        <option name="count">10</option>
-        <option name="drilldown">row</option>
-        <option name="refresh.display">progressbar</option>
-        <drilldown>
-  <link target="_blank">/app/SA-RBA/rba_attribution__threat_object?form.timepicker.earliest=$timepicker.earliest$&amp;form.timepicker.latest=$timepicker.latest$&amp;form.threat_object=$row.threat_object$&amp;form.threat_object_type=$row.threat_object_type$</link>        </drilldown>
-      </table>
-    </panel>
-    <panel>
-      <table>
-        <title>Specific Risk Messages associated with User=$field_user$</title>
+        <title>Specific Risk Messages associated with threat object = $threat_object$ and threat object type = $threat_object_type$</title>
         <search>
           <query>| from datamodel:"Risk.All_Risk"
-|search risk_object=$field_user$ search_name="Threat*"|stats count by risk_message</query>
+|search threat_object="*$threat_object$*" threat_object_type="$threat_object_type$" search_name="Threat*"|stats count by risk_message, threat_object, threat_object_type</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -306,7 +284,7 @@
         <title>Risk Attribution Events</title>
         <search>
           <query>|from datamodel:"Risk.All_Risk"
-|search risk_object=$field_user$ search_name="Threat*"
+|search threat_object=$threat_object$ threat_object_type=$threat_object_type$ search_name="Threat*"
 |table _time search_name risk_rule_confidence risk_rule_impact</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
