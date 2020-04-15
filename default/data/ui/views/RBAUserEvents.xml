@@ -31,10 +31,6 @@
       	<style>.btn-secondary { margin: 5px 10px 5px 0; }</style>
         <a href="/app/SplunkEnterpriseSecuritySuite/ident_by_name?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.s_ident=$field_user$/" class="btn btn-secondary" target="_BLANK">Investigate Identity Artifacts</a>
       </html>
-      <html>
-      	<style>.btn-secondary { margin: 5px 10px 5px 0; }</style>
-        <a href="/app/SplunkEnterpriseSecuritySuite/identity_investigator?form.time.earliest=$timepicker.earliest$&amp;form.time.latest=$timepicker.latest$&amp;form.identity=$field_user$/" class="btn btn-secondary" target="_BLANK">Identity Investigator (swimlanes)</a>
-      </html>
     </panel>
     <panel>
       <viz type="semicircle_donut.semicircle_donut">
@@ -272,6 +268,23 @@
     </panel>
   </row>
   <row>
+    <panel>
+      <table>
+        <title>Related Threat Objects</title>
+        <search>
+          <query>index=risk risk_object="$field_user$"
+| stats count by threat_object, threat_object_type, risk_object
+| sort - count</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">row</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+  <link target="_blank">/app/SA-RBA/rba_attribution__threat_object?form.timepicker.earliest=$timepicker.earliest$&amp;form.timepicker.latest=$timepicker.latest$&amp;form.threat_object=$row.threat_object$&amp;form.threat_object_type=$row.threat_object_type$</link>        </drilldown>
+      </table>
+    </panel>
     <panel>
       <table>
         <title>Specific Risk Messages associated with User=$field_user$</title>
