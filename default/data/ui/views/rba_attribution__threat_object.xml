@@ -238,9 +238,8 @@
           <latest>$timepicker.latest$</latest>
         </search>
         <option name="drilldown">row</option>
-        <option name="refresh.display">progressbar</option>
         <drilldown>
-          <link target="_blank">/app/SA-RBA/RBASystemEvents?form.timepicker.earliest=$timepicker.earliest$&amp;form.timepicker.latest=$timepicker.latest$&amp;form.field_system=$row.risk_object$</link>
+          <link target="_blank">/app/SA-RBA/RBASystemEvents?form.timepicker.earliest=$timepicker.earliest$&amp;form.timepicker.latest=$timepicker.latest$&amp;form.field_system=$row.threat_object$</link>
         </drilldown>
       </table>
     </panel>
