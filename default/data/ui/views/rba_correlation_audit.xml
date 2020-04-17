@@ -127,4 +127,29 @@
       </table>
     </panel>
   </row>
+  <row>
+    <panel>
+      <title>MITRE Context Lookup</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunk_python "SA-RBA genmitrelookup.py finished"
+| head 1
+| eval message = "mitredict lookup last updated: " + strftime(_time,"%Y-%m-%d %H:%M:%S")
+| eval updated_in_last_month = if(_time &gt; (NOW() - (60*60*24*31)), "true", "false")
+| join [ |inputlookup mitredict | stats count AS "mitre_technique_count" ]
+| table message, updated_in_last_month, mitre_technique_count</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
 </form>
