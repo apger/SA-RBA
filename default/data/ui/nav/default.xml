@@ -1,7 +1,16 @@
 <nav search_view="search">
+  <collection label="RBA Investigation">
+    <view name="RBASystemEvents"></view>
+    <view name="RBAUserEvents"></view>
+    <view name="rba_attribution__threat_object"></view>
+  </collection>
+
+  <collection label="RBA Configuration">
+    <saved name="RBA MITRE Context Gen" />
+    <view name="rba_correlation_audit"></view>
+  </collection>
+
   <view name="search" default='true' />
-  <view name="datasets" />
   <view name="reports" />
-  <view name="alerts" />
   <view name="dashboards" />
 </nav>
