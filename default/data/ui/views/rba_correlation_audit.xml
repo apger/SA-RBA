@@ -11,6 +11,188 @@
   </fieldset>
   <row>
     <panel>
+      <title>MITRE Context Lookup</title>
+      <table>
+        <search>
+          <query>index=_internal sourcetype=splunk_python "SA-RBA genmitrelookup.py finished"
+| head 1
+| eval message = "mitredict lookup last updated: " + strftime(_time,"%Y-%m-%d %H:%M:%S")
+| eval updated_in_last_month = if(_time &gt; (NOW() - (60*60*24*31)), "true", "false")
+| join [ |inputlookup mitredict | stats count AS "mitre_technique_count" ]
+| table message, updated_in_last_month, mitre_technique_count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <drilldown>
+          <link target="_blank">search?q=%7Cinputlookup%20mitredict&amp;earliest=0&amp;latest=</link>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>Risk Rules:  Total Risk Objects versus Aggregate Score</title>
+      <chart>
+        <search>
+          <query>|tstats `summariesonly` dc(All_Risk.risk_object) as "Num of Risk Objects",sum(All_Risk.risk_score) as "Agg Score", max(All_Risk.risk_score) as max_score from datamodel="Risk.All_Risk" by source</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">bubble</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Risk Object Scoring versus Score Threshold</title>
+      <chart>
+        <title>User Risk Objects</title>
+        <search>
+          <query>|tstats `summariesonly` sum(All_Risk.risk_score) as "Agg Score" from datamodel="Risk.All_Risk" where All_Risk.risk_object_type="user" by All_Risk.risk_object|rename "All_Risk.risk_object" as "Risk Object"|eval "Risk Threshold"=100|sort - "Agg Score"|head 20</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.overlayFields">"Risk Threshold"</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <drilldown>
+          <link target="_blank">/app/SplunkEnterpriseSecuritySuite/RBAUserEvents?form.timepicker.earliest=$earliest$&amp;form.timepicker.latest=$latest$&amp;form.field_user=$click.value$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Risk Object Scoring versus Score Threshold</title>
+      <chart>
+        <title>System Risk Objects</title>
+        <search>
+          <query>|tstats `summariesonly` sum(All_Risk.risk_score) as "Agg Score" from datamodel="Risk.All_Risk" where All_Risk.risk_object_type="system" by All_Risk.risk_object|rename "All_Risk.risk_object" as "Risk Object"|eval "Risk Threshold"=100|sort - "Agg Score"|head 20</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"Risk Threshold"</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">/app/SplunkEnterpriseSecuritySuite/RBASystemEvents?form.timepicker.latest=$latest$&amp;form.field_system=$click.value$&amp;form.timepicker.earliest=$earliest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Threat Object Scoring versus Score Threshold</title>
+      <chart>
+        <search>
+          <query>|tstats `summariesonly` sum(All_Risk.risk_score) as "Agg Score" from datamodel="Risk.All_Risk" by All_Risk.threat_object|rename "All_Risk.threat_object" as "Threat Object"|eval "Risk Threshold"=100|sort - "Agg Score"|head 20</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"Risk Threshold"</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">/app/SplunkEnterpriseSecuritySuite/rba_attribution__threat_object?form.threat_object=$click.value$&amp;form.threat_object_type=*&amp;form.timepicker.earliest=$earliest$&amp;form.timepicker.latest=$latest$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>RBA Correlation Execution</title>
       <table>
         <title>Click to see recent notable or risk events</title>
@@ -56,20 +238,6 @@
           <set token="tok_savedsearchname">$row.Saved Search Name$</set>
         </drilldown>
       </table>
-    </panel>
-    <panel depends="$tok_savedsearchname$">
-      <event>
-        <search>
-          <query>index=notable OR index=risk source="$tok_savedsearchname$" | fields * | head 20</query>
-          <earliest>$field1.earliest$</earliest>
-          <latest>$field1.latest$</latest>
-        </search>
-        <option name="list.drilldown">full</option>
-        <option name="refresh.display">progressbar</option>
-        <drilldown>
-          <unset token="tok_sourcetype"></unset>
-        </drilldown>
-      </event>
     </panel>
   </row>
   <row>
@@ -124,31 +292,6 @@
         <drilldown>
           <link target="_blank">search?q=%7C%20rest%20splunk_server=local%20/servicesNS/-/-/saved/searches%20%0A%7C%20search%20title=%22$row.title$%22%20%0A%7C%20fields%20title%20search&amp;earliest=$field1.earliest$&amp;latest=$field1.latest$</link>
         </drilldown>
-      </table>
-    </panel>
-  </row>
-  <row>
-    <panel>
-      <title>MITRE Context Lookup</title>
-      <table>
-        <search>
-          <query>index=_internal sourcetype=splunk_python "SA-RBA genmitrelookup.py finished"
-| head 1
-| eval message = "mitredict lookup last updated: " + strftime(_time,"%Y-%m-%d %H:%M:%S")
-| eval updated_in_last_month = if(_time &gt; (NOW() - (60*60*24*31)), "true", "false")
-| join [ |inputlookup mitredict | stats count AS "mitre_technique_count" ]
-| table message, updated_in_last_month, mitre_technique_count</query>
-          <earliest>-24h@h</earliest>
-          <latest>now</latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="count">20</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="percentagesRow">false</option>
-        <option name="rowNumbers">false</option>
-        <option name="totalsRow">false</option>
-        <option name="wrap">true</option>
       </table>
     </panel>
   </row>
