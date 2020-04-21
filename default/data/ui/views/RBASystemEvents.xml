@@ -78,7 +78,7 @@
       <table>
         <title>Asset Details</title>
         <search>
-          <query>| `assets` | search [| makeresults | eval key="$field_system$" | makemv delim=",",key | mvexpand key] | rename key AS asset_name |table asset_name priority bunit category owner city country ip mac nt_host dns</query>
+          <query>| from datamodel:"Identity_Management.All_Assets"|search asset="$field_system$"|table asset priority bunit category owner city country ip mac nt_host dns</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -88,6 +88,63 @@
           <colorPalette type="map">{"critical":0xD25B3B,"high":0xFF8800,"medium":0xF0BE1B,"low":0x98BF3B,"informational":0x5378AD,"unknown":0x999999}</colorPalette>
         </format>
       </table>
+    </panel>
+    <panel>
+      <title>Connected Risk and Threat Objects</title>
+      <viz type="force_directed_viz.force_directed">
+        <search>
+          <query>index=risk
+
+[|search index=risk [|search index=risk [|search index=risk "$field_system$" |eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as risk_object]
+
+OR 
+
+[|search index=risk [|search index=risk [|search index=risk "$field_system$" |eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as threat_object]
+
+|stats sum(risk_score) by risk_object,threat_object</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="force_directed_viz.force_directed.AttractDistanceMax">200</option>
+        <option name="force_directed_viz.force_directed.AttractDistanceMin">60</option>
+        <option name="force_directed_viz.force_directed.AttractForceStrength">-300</option>
+        <option name="force_directed_viz.force_directed.CollisionIterations">1</option>
+        <option name="force_directed_viz.force_directed.CollisionRadius">30</option>
+        <option name="force_directed_viz.force_directed.CollisionStrength">0.7</option>
+        <option name="force_directed_viz.force_directed.ColorRange1">100</option>
+        <option name="force_directed_viz.force_directed.ColorRange1Code">#65a637</option>
+        <option name="force_directed_viz.force_directed.ColorRange2">500</option>
+        <option name="force_directed_viz.force_directed.ColorRange2Code">#6db7c6</option>
+        <option name="force_directed_viz.force_directed.ColorRange3">1000</option>
+        <option name="force_directed_viz.force_directed.ColorRange3Code">#f7bc38</option>
+        <option name="force_directed_viz.force_directed.ColorRange4">10000</option>
+        <option name="force_directed_viz.force_directed.ColorRange4Code">#f58f39</option>
+        <option name="force_directed_viz.force_directed.ColorRange5">1000000</option>
+        <option name="force_directed_viz.force_directed.ColorRange5Code">#d93f3c</option>
+        <option name="force_directed_viz.force_directed.ForceCollision">20</option>
+        <option name="force_directed_viz.force_directed.LineColor">disabled</option>
+        <option name="force_directed_viz.force_directed.LinkDistance">100</option>
+        <option name="force_directed_viz.force_directed.LinkLength">1</option>
+        <option name="force_directed_viz.force_directed.PanZoom">enabled</option>
+        <option name="force_directed_viz.force_directed.RepelDistanceMax">50</option>
+        <option name="force_directed_viz.force_directed.RepelDistanceMin">10</option>
+        <option name="force_directed_viz.force_directed.RepelForceStrength">-140</option>
+        <option name="force_directed_viz.force_directed.SWRange1">1</option>
+        <option name="force_directed_viz.force_directed.SWRange2">1</option>
+        <option name="force_directed_viz.force_directed.SWRange3">1</option>
+        <option name="force_directed_viz.force_directed.SWRange4">1</option>
+        <option name="force_directed_viz.force_directed.SWRange5">1</option>
+        <option name="force_directed_viz.force_directed.arrows">disabled</option>
+        <option name="force_directed_viz.force_directed.lowerRange">20</option>
+        <option name="force_directed_viz.force_directed.theme">light</option>
+        <option name="force_directed_viz.force_directed.upperRange">20</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
     </panel>
   </row>
   <row>
