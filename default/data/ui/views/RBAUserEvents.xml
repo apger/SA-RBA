@@ -75,6 +75,22 @@
   </row>
   <row>
     <panel>
+      <input type="link" token="show_web">
+        <label></label>
+        <choice value="true">Show Attack Web</choice>
+        <choice value="false">Hide Attack Web</choice>
+        <default>false</default>
+        <initialValue>false</initialValue>
+        <change>
+          <condition value="true">
+            <set token="show_web">true</set>
+          </condition>
+          <condition value="false">
+            <unset token="show_web"></unset>
+            <unset token="chain_value"></unset>
+          </condition>
+        </change>
+      </input>
       <table>
         <title>Identity Details</title>
         <search>
@@ -92,61 +108,106 @@
         </drilldown>
       </table>
     </panel>
-    <panel>
-      <title>Connected Risk and Threat Objects</title>
-      <viz type="force_directed_viz.force_directed">
+  </row>
+  <row>
+    <panel depends="$show_web$">
+      <title>Attack Web</title>
+      <input type="link" token="depth_tok" searchWhenChanged="true">
+        <label>Depth</label>
+        <choice value="0">0</choice>
+        <choice value="1">1</choice>
+        <choice value="2">2</choice>
+        <choice value="3">3</choice>
+        <change>
+          <condition value="0">
+            <set token="depth_tok">*</set>
+          </condition>
+          <condition value="1">
+            <set token="depth_tok">OR [search index=risk risk_object="$field_user$" | table threat_object | dedup threat_object]</set>
+          </condition>
+          <condition value="2">
+            <set token="depth_tok">OR [search index=risk [search index=risk risk_object="$field_user$" | table threat_object | dedup threat_object] | table risk_object | dedup risk_object]</set>
+          </condition>
+          <condition value="3">
+            <set token="depth_tok">OR [search index=risk [search index=risk [search index=risk risk_object="$field_user$" | table threat_object | dedup threat_object] | table risk_object | dedup risk_object] | table threat_object | dedup threat_object]</set>
+          </condition>
+        </change>
+        <default>0</default>
+        <initialValue>0</initialValue>
+      </input>
+      <viz type="network-diagram-viz.network-diagram-viz">
+        <title>Double Click to Pivot</title>
         <search>
-          <query>index=risk
-
-[|search index=risk [|search index=risk [|search index=risk "$field_user$" |eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as risk_object]
-
-OR 
-
-[|search index=risk [|search index=risk [|search index=risk "$field_user$" |eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as search]|eval c=mvappend(risk_object,threat_object)|mvexpand c|table c|dedup c|rename c as threat_object]
-
-|stats sum(risk_score) by risk_object,threat_object</query>
-          <earliest>0</earliest>
-          <latest></latest>
-          <sampleRatio>1</sampleRatio>
+          <query>index=risk risk_object=$field_user$ $depth_tok$
+| eval risk_object_type=if(risk_object_type="user","users","server"), threat_object_type=case(threat_object_type="process","code", like(threat_object_type,"file%"),"file",cidrmatch("10.0.0.0/8",to) OR cidrmatch("172.16.0.0/12",to) OR cidrmatch("192.168.0.0/16",to),"database",threat_object_type="domain" OR threat_object_type="ip","globe",true(),threat_object_type) 
+| table risk_object risk_object_type threat_object threat_object_type 
+| rename risk_object as from  threat_object as to 
+| eval type=risk_object_type 
+| appendpipe [| eval temp=from, from=to, type=threat_object_type] | eval to=if(isnotnull(temp),temp,to)
+| fields from to type 
+| eval color=case(type="server","red",type="users","yellow",type="file","blue",type="code","green",true(),"blue")</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
         </search>
-        <option name="drilldown">none</option>
-        <option name="force_directed_viz.force_directed.AttractDistanceMax">200</option>
-        <option name="force_directed_viz.force_directed.AttractDistanceMin">60</option>
-        <option name="force_directed_viz.force_directed.AttractForceStrength">-300</option>
-        <option name="force_directed_viz.force_directed.CollisionIterations">1</option>
-        <option name="force_directed_viz.force_directed.CollisionRadius">30</option>
-        <option name="force_directed_viz.force_directed.CollisionStrength">0.7</option>
-        <option name="force_directed_viz.force_directed.ColorRange1">100</option>
-        <option name="force_directed_viz.force_directed.ColorRange1Code">#65a637</option>
-        <option name="force_directed_viz.force_directed.ColorRange2">500</option>
-        <option name="force_directed_viz.force_directed.ColorRange2Code">#6db7c6</option>
-        <option name="force_directed_viz.force_directed.ColorRange3">1000</option>
-        <option name="force_directed_viz.force_directed.ColorRange3Code">#f7bc38</option>
-        <option name="force_directed_viz.force_directed.ColorRange4">10000</option>
-        <option name="force_directed_viz.force_directed.ColorRange4Code">#f58f39</option>
-        <option name="force_directed_viz.force_directed.ColorRange5">1000000</option>
-        <option name="force_directed_viz.force_directed.ColorRange5Code">#d93f3c</option>
-        <option name="force_directed_viz.force_directed.ForceCollision">20</option>
-        <option name="force_directed_viz.force_directed.LineColor">disabled</option>
-        <option name="force_directed_viz.force_directed.LinkDistance">100</option>
-        <option name="force_directed_viz.force_directed.LinkLength">1</option>
-        <option name="force_directed_viz.force_directed.PanZoom">enabled</option>
-        <option name="force_directed_viz.force_directed.RepelDistanceMax">50</option>
-        <option name="force_directed_viz.force_directed.RepelDistanceMin">10</option>
-        <option name="force_directed_viz.force_directed.RepelForceStrength">-140</option>
-        <option name="force_directed_viz.force_directed.SWRange1">1</option>
-        <option name="force_directed_viz.force_directed.SWRange2">1</option>
-        <option name="force_directed_viz.force_directed.SWRange3">1</option>
-        <option name="force_directed_viz.force_directed.SWRange4">1</option>
-        <option name="force_directed_viz.force_directed.SWRange5">1</option>
-        <option name="force_directed_viz.force_directed.arrows">disabled</option>
-        <option name="force_directed_viz.force_directed.lowerRange">20</option>
-        <option name="force_directed_viz.force_directed.theme">light</option>
-        <option name="force_directed_viz.force_directed.upperRange">20</option>
+        <option name="drilldown">all</option>
+        <option name="height">607</option>
+        <option name="network-diagram-viz.network-diagram-viz.canZoom">true</option>
+        <option name="network-diagram-viz.network-diagram-viz.clusterBy">none</option>
+        <option name="network-diagram-viz.network-diagram-viz.defaultNodeType">circle</option>
+        <option name="network-diagram-viz.network-diagram-viz.draggableNodes">true</option>
+        <option name="network-diagram-viz.network-diagram-viz.enablePhysics">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchy">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchyDirection">Bottom-Up</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchySortMethod">directed</option>
+        <option name="network-diagram-viz.network-diagram-viz.linkTextLocation">bottom</option>
+        <option name="network-diagram-viz.network-diagram-viz.linkTextSize">medium</option>
+        <option name="network-diagram-viz.network-diagram-viz.nodeTextSize">medium</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdges">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenNode">nd_node_token</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenToNode">nd_to_node_token</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenValue">nd_value_token</option>
+        <option name="refresh.display">none</option>
+        <drilldown>
+          <set token="chain_value">$row.from$</set>
+        </drilldown>
+      </viz>
+    </panel>
+    <panel depends="$chain_value$">
+      <viz type="network-diagram-viz.network-diagram-viz">
+        <title>Attack Web Pivot</title>
+        <search>
+          <query>index=risk risk_object="$chain_value$" OR threat_object="*$chain_value$*"
+ | eval risk_object_type=if(risk_object_type="user","users","server"), threat_object_type=case(threat_object_type="process","code", like(threat_object_type,"file%"),"file",cidrmatch("10.0.0.0/8",to) OR cidrmatch("172.16.0.0/12",to) OR cidrmatch("192.168.0.0/16",to),"database",threat_object_type="domain" OR threat_object_type="ip","globe",true(),threat_object_type) 
+| table risk_object risk_object_type threat_object threat_object_type 
+| rename risk_object as from  threat_object as to 
+| eval type=risk_object_type 
+| appendpipe [| eval temp=from, from=to, type=threat_object_type] | eval to=if(isnotnull(temp),temp,to)
+| fields from to type 
+| eval color=case(type="server","red",type="users","yellow",type="file","blue",type="code","green",true(),"blue")</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="height">607</option>
+        <option name="network-diagram-viz.network-diagram-viz.canZoom">true</option>
+        <option name="network-diagram-viz.network-diagram-viz.clusterBy">none</option>
+        <option name="network-diagram-viz.network-diagram-viz.defaultNodeType">circle</option>
+        <option name="network-diagram-viz.network-diagram-viz.draggableNodes">true</option>
+        <option name="network-diagram-viz.network-diagram-viz.enablePhysics">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchy">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchyDirection">Bottom-Up</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchySortMethod">hubsize</option>
+        <option name="network-diagram-viz.network-diagram-viz.linkTextLocation">bottom</option>
+        <option name="network-diagram-viz.network-diagram-viz.linkTextSize">medium</option>
+        <option name="network-diagram-viz.network-diagram-viz.nodeTextSize">medium</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdges">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenNode">nd_node_token</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenToNode">nd_to_node_token</option>
+        <option name="network-diagram-viz.network-diagram-viz.tokenValue">nd_value_token</option>
         <option name="refresh.display">progressbar</option>
-        <option name="trellis.enabled">0</option>
-        <option name="trellis.scales.shared">1</option>
-        <option name="trellis.size">medium</option>
+        <drilldown>
+          <set token="chain_value">$row.from$</set>
+        </drilldown>
       </viz>
     </panel>
   </row>
