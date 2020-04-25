@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2.0.0", 
+  "info": {
+    "title": "SA-RBA", 
+    "id": {
+      "group": null, 
+      "name": "SA_RBA_master", 
+      "version": "2.0.18"
+    }, 
+    "author": [
+      {
+        "name": "Jim Apger", 
+        "email": null, 
+        "company": null
+      }
+    ], 
+    "releaseDate": null, 
+    "description": "Risk Based Alerting - reference config examples and modular tie into Splunk Security Essentials.  Go RBA!", 
+    "classification": {
+      "intendedAudience": null, 
+      "categories": [], 
+      "developmentStatus": null
+    }, 
+    "commonInformationModels": null, 
+    "license": {
+      "name": null, 
+      "text": null, 
+      "uri": null
+    }, 
+    "privacyPolicy": {
+      "name": null, 
+      "text": null, 
+      "uri": null
+    }, 
+    "releaseNotes": {
+      "name": null, 
+      "text": "./README.md", 
+      "uri": null
+    }
+  }, 
+  "dependencies": null, 
+  "tasks": null, 
+  "inputGroups": null, 
+  "incompatibleApps": null, 
+  "platformRequirements": null, 
+  "supportedDeployments": [
+    "_standalone", 
+    "_distributed"
+  ], 
+  "targetWorkloads": null
+}
