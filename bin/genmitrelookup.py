@@ -5,6 +5,22 @@ import splunklib.client as client
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error, six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 
 #  Rev 1 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Initial release.
+#  Rev 2 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Added MITRE ATT&CK Threat Groups
+
+class group:
+    def __init__(self,intrusion_id,external_id,name,aliases,description,x_mitre_version):
+	self.intrusion_id = intrusion_id
+	self.external_id = external_id
+	self.name = name
+	self.aliases = aliases
+	self.description = description
+	self.x_mitre_version =  x_mitre_version
+
+class relationship:
+    def __init__(self,relationship_id,attack_pattern,intrustion_id):
+	self.relationship_id = relationship_id
+	self.attack_pattern = attack_pattern
+	self.intrusion_id = intrustion_id
 
 @Configuration()
 class GenerateMitreCommand(GeneratingCommand):
@@ -41,6 +57,35 @@ class GenerateMitreCommand(GeneratingCommand):
 	else:
 	    self.logger.info("SA-RBA KVStore Collection {} NOT Found".format(collection_name))
 
+	relationships=[]
+	for r in jsonData["objects"]:
+	    if r['type'] == 'relationship' and r['source_ref'].startswith("intrusion-set"):
+		relationships.append(relationship(r['id'],r['target_ref'],r['source_ref']))
+	self.logger.info("SA-RBA retrieved {} relationships from the enterprise ATT&CK dict".format(len(relationships)))    
+ 	#print(vars(relationships[0]))
+
+	groups=[]
+	for g in jsonData["objects"]:
+	    aliases="none"
+	    description="none"
+	    x_mitre_version="none"
+	    if g['type'] == 'intrusion-set':
+		if 'aliases' in g:
+		    aliases=','.join(g['aliases'])  #Convert the list to a string
+		if 'description' in g:
+		    description=g['description']
+		if 'x_mitre_version' in g:
+		    x_mitre_version=g['x_mitre_version']
+		groups.append(group(g['id'],g['external_references'][0]['external_id'],g['name'],aliases,description,x_mitre_version))
+	self.logger.info("SA-RBA retrieved {} groups from the enterprise ATT&CK dict".format(len(groups)))    
+	#print(vars(groups[0]))
+
+
+
+
+
+
+
 	#Build a mapping of mitre tactic names to ids
 	tactics={}
 	for i in jsonData["objects"]:
@@ -68,6 +113,18 @@ class GenerateMitreCommand(GeneratingCommand):
 		else:
 		    result["mitre_detection"]="None"
 
+
+		n=[]
+		a=[]
+		for r in relationships:
+		    if r.attack_pattern == i['id']:
+			for g in groups:
+			    if r.intrusion_id == g.intrusion_id:
+				n.append(g.name)
+				a.append(g.aliases)
+		result['mitre_threat_group_name']=n
+		result['mitre_threat_group_aliases']=a
+
 		#send them to stdout if you wanted to carry results into spl for something like an outputlookup
 		#yield {'mitre_technique_id': result["mitre_technique_id"],\
 		#	'mitre_tactic': result["mitre_tactic"],\
@@ -84,7 +141,9 @@ class GenerateMitreCommand(GeneratingCommand):
 		    "mitre_technique": result["mitre_technique"],\
 		    "mitre_description": result["mitre_description"],\
 		    "mitre_url": result["mitre_url"],\
-		    "mitre_detection": result["mitre_detection"]}))
+		    "mitre_detection": result["mitre_detection"],\
+		    "mitre_threat_group_name": result["mitre_threat_group_name"],\
+		    "mitre_threat_group_aliases": result["mitre_threat_group_aliases"]}))
 
 	self.logger.info("SA-RBA genmitrelookup.py finished")
 	yield {'_time': time.time(),'_raw':'SA-RBA genmitrelookup.py finished'}
