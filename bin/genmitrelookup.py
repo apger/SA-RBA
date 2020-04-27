@@ -6,21 +6,34 @@ import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error,
 
 #  Rev 1 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Initial release.
 #  Rev 2 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Added MITRE ATT&CK Threat Groups
+#  Rev 3 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Added MITRE ATT&CK Software
 
 class group:
-    def __init__(self,intrusion_id,external_id,name,aliases,description,x_mitre_version):
+    def __init__(self,intrusion_id,external_id,name,aliases,description,x_mitre_version,url):
 	self.intrusion_id = intrusion_id
 	self.external_id = external_id
 	self.name = name
 	self.aliases = aliases
 	self.description = description
 	self.x_mitre_version =  x_mitre_version
+	self.url =  url
 
 class relationship:
-    def __init__(self,relationship_id,attack_pattern,intrustion_id):
+    def __init__(self,relationship_id,attack_pattern,source_ref):
 	self.relationship_id = relationship_id
 	self.attack_pattern = attack_pattern
-	self.intrusion_id = intrustion_id
+	self.source_ref= source_ref
+
+class software:
+    def __init__(self,software_id, external_id, name, software_label, platform, type, url, aliases) :
+	self.software_id = software_id
+	self.external_id = external_id
+	self.name = name
+	self.software_label = software_label
+	self.platform = platform
+	self.type = type
+	self.url = url
+	self.aliases = aliases
 
 @Configuration()
 class GenerateMitreCommand(GeneratingCommand):
@@ -42,7 +55,6 @@ class GenerateMitreCommand(GeneratingCommand):
 	collection = service.kvstore[collection_name]
 	if collection_name in service.kvstore:
 	    self.logger.info("SA-RBA KVStore Collection {} Found".format(collection_name))
-	    #self.logger.info("SA-RBA KVStore data: {}".format(json.dumps(collection.data.query(), indent=1)))
 	    self.logger.info("SA-RBA KVStore Deleting all data from collection {}".format(collection_name))
 	    collection.data.delete()
 
@@ -57,13 +69,31 @@ class GenerateMitreCommand(GeneratingCommand):
 	else:
 	    self.logger.info("SA-RBA KVStore Collection {} NOT Found".format(collection_name))
 
+	# Grab all mitre relationship context from the mitre dict.  Techniques will map to these
 	relationships=[]
 	for r in jsonData["objects"]:
 	    if r['type'] == 'relationship' and r['source_ref'].startswith("intrusion-set"):
 		relationships.append(relationship(r['id'],r['target_ref'],r['source_ref']))
+	    if r['type'] == 'relationship' and r['source_ref'].startswith("malware--"):
+		relationships.append(relationship(r['id'],r['target_ref'],r['source_ref']))
+	    if r['type'] == 'relationship' and r['source_ref'].startswith("tool--"):
+		relationships.append(relationship(r['id'],r['target_ref'],r['source_ref']))
 	self.logger.info("SA-RBA retrieved {} relationships from the enterprise ATT&CK dict".format(len(relationships)))    
- 	#print(vars(relationships[0]))
 
+	# Grab all mitre software context from the mitre dict.  Techniques will map to these via relationships
+	softwares=[]
+	for s in jsonData["objects"]:
+	    x_mitre_platforms="none"
+	    x_mitre_aliases="none"
+	    if s['type'] == 'malware' or s['type'] == 'tool':
+		if 'x_mitre_platforms' in s:
+		    x_mitre_platforms=','.join(s['x_mitre_platforms']) #Convert the list to a string 
+		if 'x_mitre_aliases' in s:
+		    x_mitre_aliases=s['x_mitre_aliases']
+		softwares.append(software(s['id'],s['external_references'][0]['external_id'],s['name'],s['labels'],x_mitre_platforms,s['type'],s['external_references'][0]['url'],x_mitre_aliases))
+	self.logger.info("SA-RBA retrieved {} software object from the enterprise ATT&CK dict".format(len(softwares)))    
+
+	# Grab all mitre threat group context from the mitre dict.  Techniques will map to these via relationships
 	groups=[]
 	for g in jsonData["objects"]:
 	    aliases="none"
@@ -76,15 +106,8 @@ class GenerateMitreCommand(GeneratingCommand):
 		    description=g['description']
 		if 'x_mitre_version' in g:
 		    x_mitre_version=g['x_mitre_version']
-		groups.append(group(g['id'],g['external_references'][0]['external_id'],g['name'],aliases,description,x_mitre_version))
+		groups.append(group(g['id'],g['external_references'][0]['external_id'],g['name'],aliases,description,x_mitre_version,g['external_references'][0]['url']))
 	self.logger.info("SA-RBA retrieved {} groups from the enterprise ATT&CK dict".format(len(groups)))    
-	#print(vars(groups[0]))
-
-
-
-
-
-
 
 	#Build a mapping of mitre tactic names to ids
 	tactics={}
@@ -113,17 +136,39 @@ class GenerateMitreCommand(GeneratingCommand):
 		else:
 		    result["mitre_detection"]="None"
 
-
-		n=[]
-		a=[]
-		for r in relationships:
-		    if r.attack_pattern == i['id']:
+		# lets add threat group and software association based on the technique
+		group_name=[]
+		group_alias=[]
+		group_url=[]
+		group_external_id=[]
+		software_name=[]
+		software_type=[]
+		software_platform=[]
+		software_url=[]
+	 	for r in relationships:
+		    if r.attack_pattern == i['id'] and r.source_ref.startswith("intrusion-set"):
 			for g in groups:
-			    if r.intrusion_id == g.intrusion_id:
-				n.append(g.name)
-				a.append(g.aliases)
-		result['mitre_threat_group_name']=n
-		result['mitre_threat_group_aliases']=a
+			    if r.source_ref == g.intrusion_id:
+				group_name.append(g.name)
+				group_alias.append(g.aliases)
+				group_url.append(g.url)
+				group_external_id.append(g.external_id)
+		    if r.attack_pattern == i['id'] and (r.source_ref.startswith("malware--") or r.source_ref.startswith("tool--")):
+			for s in softwares:
+			    if r.source_ref == s.software_id:
+				software_name.append(s.name)
+				software_type.append(s.type)
+				software_platform.append(s.platform)
+				software_url.append(s.url)
+
+		result['mitre_threat_group_name']=group_name
+		result['mitre_threat_group_aliases']=group_alias
+		result['mitre_threat_group_url']=group_url
+		result['mitre_threat_group_id']=group_external_id
+		result['mitre_software_name']=software_name
+		result['mitre_software_type']=software_type
+		result['mitre_software_platform']=software_platform
+		result['mitre_software_url']=software_url
 
 		#send them to stdout if you wanted to carry results into spl for something like an outputlookup
 		#yield {'mitre_technique_id': result["mitre_technique_id"],\
@@ -143,7 +188,12 @@ class GenerateMitreCommand(GeneratingCommand):
 		    "mitre_url": result["mitre_url"],\
 		    "mitre_detection": result["mitre_detection"],\
 		    "mitre_threat_group_name": result["mitre_threat_group_name"],\
-		    "mitre_threat_group_aliases": result["mitre_threat_group_aliases"]}))
+		    "mitre_threat_group_aliases": result["mitre_threat_group_aliases"],\
+		    "mitre_threat_group_url": result["mitre_threat_group_url"],\
+		    "mitre_software_name": result["mitre_software_name"],\
+		    "mitre_software_type": result["mitre_software_type"],\
+		    "mitre_software_platform": result["mitre_software_platform"],\
+		    "mitre_software_url": result["mitre_software_url"]}))
 
 	self.logger.info("SA-RBA genmitrelookup.py finished")
 	yield {'_time': time.time(),'_raw':'SA-RBA genmitrelookup.py finished'}
