@@ -1,4 +1,5 @@
-The below json blob is an example of what can be added to extend the default Risk Analysis datamodel to pickup additional fields typical for a RBA deployment.
+The below json blob is an example of what can be added to extend the default Risk Analysis datamodel to pickup additional fields typ
+ical for a RBA deployment.
 
 Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/models/Risk.json
 
@@ -236,6 +237,42 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "comment": ""
                 },
                 {
+                    "fieldName": "src",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "src",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "dest",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "dest",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "user",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "user",
+                    "comment": ""
+                },
+                {
                     "fieldName": "_time",
                     "owner": "BaseEvent",
                     "type": "timestamp",
@@ -405,7 +442,7 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                 {
                     "outputFields": [
                         {
-                            "fieldName": "TESTMODE",
+                            "fieldName": "testmode",
                             "owner": "All_Risk",
                             "type": "boolean",
                             "fieldSearch": "",
@@ -413,7 +450,7 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                             "multivalue": false,
                             "hidden": false,
                             "editable": true,
-                            "displayName": "TESTMODE",
+                            "displayName": "testmode",
                             "comment": ""
                         }
                     ],
