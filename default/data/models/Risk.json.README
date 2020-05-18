@@ -459,7 +459,7 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "editable": true,
                     "comment": "",
                     "calculationType": "Eval",
-                    "expression": "if(isnull(TESTMODE), 0, TESTMODE)"
+                    "expression": "if(isnull(testmode), 0, testmode)"
                 }
             ],
             "constraints": [
