@@ -1,4 +1,4 @@
-The below json blob is an example of what can be added to extend the default Risk Analysis datamodel to pickup additional fields typical for a RBA deployment. Please not that this example config is specific to SA-RBA version 1 and 2.  This collection of mechanics was built on top of the BOTSv2 dataset.  There is a second version of this README that is specific to RBA version 3 which is built on the BOTSv4 dataset.
+The below json blob is an example of what can be added to extend the default Risk Analysis datamodel to pickup additional fields typical for a RBA deployment. Please not that this example config is specific to SA-RBA version 3.  This collection of mechanics was built on top of the BOTSv4 dataset.  There is a second version of this README that is specific to RBA versions 1 and 2 which is built on the BOTSv2 dataset.
 
 Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/models/Risk.json
 
@@ -188,15 +188,27 @@ Copy the below blob to $SPLUNK_HOME/etc/apps/SA-ThreatIntelligence/local/data/mo
                     "comment": ""
                 },
 		{
-                    "fieldName": "rule_attack_tactic_technique",
+                    "fieldName": "mitre_technique_id",
                     "owner": "All_Risk",
                     "type": "string",
                     "fieldSearch": "",
                     "required": false,
-                    "multivalue": false,
+                    "multivalue": true,
                     "hidden": false,
                     "editable": true,
-                    "displayName": "rule_attack_tactic_technique",
+                    "displayName": "mitre_technique_id",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "mitre_tactic_id",
+                    "owner": "All_Risk",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": true,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "mitre_tactic_id",
                     "comment": ""
                 },
                 {
