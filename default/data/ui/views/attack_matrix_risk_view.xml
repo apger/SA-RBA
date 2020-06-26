@@ -1,0 +1,441 @@
+<form script="mitre_matrix.js" stylesheet="mitre_matrix.css" theme="light">
+  <label>ATT&amp;CK Matrix Risk View</label>
+  <description>This dashboard portrays risk in your environment through the lens of RBA and the MITRE ATT&amp;CK framework</description>
+  <search id="mitre_base_1">
+    <query>
+      | tstats values(All_Risk.rule_attack_tactic_technique) as rule_attack_tactic_technique values(All_Risk.search_name) as search_name values(All_Risk.risk_object) as risk_object values(All_Risk.risk_object_type) as risk_object_type values(All_Risk.impact) as impact from datamodel=Risk by _time
+| `drop_dm_object_name("All_Risk")`
+| rex field=rule_attack_tactic_technique "^\w+\s\-\s(?&lt;mitre_technique_id&gt;[\S]+)\s\-"
+| lookup mitredict mitre_technique_id output mitre_tactic mitre_technique
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
+  <search id="sseanalytics_base_1">
+    <query>
+      | sseanalytics
+        | lookup use_cases.csv title AS "usecase" OUTPUT order_title AS use_case_order_title
+        | eval "Use Case Orig"=if(isnull('usecase'),"Other",'usecase')
+        | eval "Use Case"=if(isnull(use_case_order_title), "9_Other",use_case_order_title)
+        | eval "Has Data"=if(data_available="Good" OR data_available="Mixed", "Yes", "No")
+        | eval Status=case(
+        'enabled'="Yes" AND 'Has Data'="Yes","Active",
+        'enabled'!="Yes" AND 'Has Data'="Yes","Available",
+        1=1,"Needs data"
+        )
+        | eval App=displayapp, Enabled=enabled, Title=name, Journey=journey, "Data Source"=datasource, "Data Source Category"=data_source_categories_display
+        | where (mitre_tactic_display!="" AND mitre_tactic_display!="None") OR (mitre_technique_display!="" AND mitre_technique_display!="None" AND mvcount(mitre_technique_display)&gt;0)
+        | eval "MITRE Tactic"=if('mitre_tactic_display'="","-",'mitre_tactic_display'), "MITRE Technique"=mitre_technique_display, "MITRE Threat Group"=mitre_threat_groups, "MITRE Platforms"=mitre_platforms |  eval Status=if(in(datasource,"*"), "Selected",Status)
+| search Status="*" "App"="*" "Data Source"="*" "Data Source Category"="*" "bookmark_status"="*" "highlight"="*" "MITRE Tactic"="*" "MITRE Technique"="*" "MITRE Threat Group"="*" "MITRE Platforms" IN(Enterprise)
+| where like(lower(Title),"%".lower("")."%") OR like(lower(Description),"%".lower("")."%") OR like(lower('Data Source'),"%".lower("")."%") OR like(lower('Data Source Category'),"%".lower("")."%") OR like(lower('Use Case'),"%".lower("")."%")
+| eval "Selected_New"=case(isnotnull('Data Source') AND in('Data Source',"*"), 'Selected',isnotnull('Data Source') AND NOT in('Data Source',"*"),0,1=1,'Selected')
+| eval m="Move the overlapping entries to Phase 2 so they dont get lost while filtering"
+| fields - m
+| eval "Needs data"=if('Selected_New'=0 AND 'Selected'&gt;0, coalesce('Needs data',0)+coalesce('Selected',0), coalesce('Needs data',0))
+| rename "Selected_New" AS "Selected"
+
+| eval Total='Active'+'Available'+'Needs data'+'Selected'
+| sort Journey
+| eval "Use Case"='Use Case Orig',"Bookmark Status"=bookmark_status_display, Featured=highlight, "Data Availability"=data_available,Enabled=enabled,"Data Coverage"=data_available_numeric
+| eval "Data Source"=mvdedup('Data Source')
+| table Journey Status Title Description "Data Source" "Data Source Category" "Use Case" "MITRE Tactic" "MITRE Technique" App "Bookmark Status" Featured Enabled "Data Availability" "Data Coverage"
+    </query>
+    <earliest>-4h</earliest>
+    <latest>now</latest>
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>RBA-Afforded Noisy Notable Decrease (going all-in with RBA)</title>
+        <search>
+          <query>| multisearch
+    [| datamodel Risk All_Risk search
+    | eval attributions="search1"]
+    [ search index=notable search_name=rba*
+    | eval aggregations="search2"]
+| stats count(attributions) as attributions, count(aggregations) as aggregations
+| eval difference=round(100-(aggregations/attributions),2)
+| fields difference</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xdc4e41","0xf1813f","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[30,60,80]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>RBA-Afforded Decrease in Notable Count (from legacy notables)</title>
+        <search>
+          <query>| multisearch
+    [| search index=notable NOT search_name="RBA*"
+    | eval old_notables="1"]
+    [ search index=notable search_name="RBA*"
+    | eval new_rba_notables="1"]
+| stats count(old_notables) as old_notables, count(new_rba_notables) as new_rba_notables
+| eval difference=round(100-((new_rba_notables/old_notables)*100),2)
+| fields difference</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xdc4e41","0xf1813f","0xf8be34","0x53a051","0xdc4e41"]</option>
+        <option name="rangeValues">[30,50,80,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Risk Attributions - Recognized Tactics/Techniques</title>
+      <single>
+        <search>
+          <query>| tstats count from datamodel=Risk</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[50,200]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="unit">Attributions</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Actionable Risk Notables</title>
+      <single>
+        <search>
+          <query>`notable`
+| search search_name=RBA*
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[500,1000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">Risk Notables</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Risk Attribution in your Environment</title>
+      <table id="mitremaptable">
+        <search>
+          <query>| inputlookup attack_matrix.csv
+| foreach *
+    [| rex field="&lt;&lt;FIELD&gt;&gt;" "(?&lt;technique_temp&gt;.*) \("
+    | eval Technique_nogroups=coalesce(technique_temp,'&lt;&lt;FIELD&gt;&gt;')
+    | eval "&lt;&lt;FIELD&gt;&gt; Tactic" = "&lt;&lt;FIELD&gt;&gt;"
+    | lookup attack_environment_counts.csv Technique AS Technique_nogroups, "Tactic" AS "&lt;&lt;FIELD&gt;&gt; Tactic" OUTPUT technique_count
+    | fields - Technique_nogroups technique_temp
+    | eval count = coalesce(count, 1), temp = "t" + count, {temp}='&lt;&lt;FIELD&gt;&gt;', color="#f81900", colorby="Total"
+    | eval text='&lt;&lt;FIELD&gt;&gt;'
+    | eval p0_count=coalesce(technique_count,0)
+    | eval total_count=p0_count
+    | eval opacity=tostring(total_count/20)
+    | eval tooltip="Events: ".total_count."&lt;br /&gt;"
+    | eval "&lt;&lt;FIELD&gt;&gt;" = if(text!="",mvappend(text,color,opacity,tooltip),null)
+    | eval count = count + 1 ]
+| fields - temp count Active Available "Needs data" tooltip *Tactic color colorby opacity p0* p1* p2* t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 t18 text total_count "Data Source" Data_Source_Count Selected p3_count technique_count
+| table "Initial Access" Execution Persistence "Privilege Escalation" "Defense Evasion" "Credential Access" Discovery "Lateral Movement" Collection "Command And Control" Exfiltration Impact</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <title>OotB Content Available and In Use</title>
+        <search base="sseanalytics_base_1">
+          <query>| search Status="Active"
+| stats count
+| eval percentage=round(((count/373)*100),0)
+| fields percentage</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[25,70]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>OotB Content Not Usable Today (No Data)</title>
+        <search base="sseanalytics_base_1">
+          <query>| search Status="Available"
+| stats count
+| eval percentage=round(((count/373)*100),0)
+| fields percentage</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[30,50,80]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>OotB Content Available and NOT In Use</title>
+        <search base="sseanalytics_base_1">
+          <query>| search Status="Needs Data"
+| stats count
+| eval percentage=round(((count/373)*100),0)
+| fields percentage</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[5,25]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unit">%</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Active Tactics</title>
+      <chart>
+        <search base="mitre_base_1">
+          <query>stats count by mitre_tactic</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Active Techniques</title>
+      <chart>
+        <search base="mitre_base_1">
+          <query>stats count by mitre_technique</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Tactics over Time</title>
+      <chart>
+        <search base="mitre_base_1">
+          <query>timechart count by mitre_tactic usenull=f</query>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Techniques over Time</title>
+      <chart>
+        <search base="mitre_base_1">
+          <query>timechart count by mitre_technique usenull=f</query>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Risk Objects with Highest Risk Scores</title>
+      <table>
+        <search>
+          <query>| tstats sum(All_Risk.risk_score) as risk_sum from datamodel=Risk by All_Risk.risk_object
+| `drop_dm_object_name("All_Risk")`
+| sort - risk_sum
+| head 5
+| rename risk_object as "Risk Object", risk_sum as "Risk Score"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Top Command and Control Destinations IPs</title>
+      <chart>
+        <search>
+          <query>| datamodel Risk All_Risk search
+| rex field=All_Risk.rule_attack_tactic_technique "^(?&lt;tactic&gt;\w+)\s\-"
+| rex "dest_ip\=\"(?&lt;dest_ip&gt;[^\"]+)"
+| search tactic=command_and_control dest_ip!=10.0.0.0/8
+| stats count by dest_ip
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Hosts Associated with Initial Access Attempts</title>
+      <table>
+        <search>
+          <query>| datamodel Risk All_Risk search
+| rex field=All_Risk.rule_attack_tactic_technique "^(?&lt;tactic&gt;\w+)\s\-"
+| rex "orig_host\=(?&lt;initial_access_host&gt;\w+)"
+| search tactic=initial_access
+| stats count by initial_access_host
+| rename initial_access_host as "Host in Question"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Tactics and Techniques by Identity</title>
+      <table>
+        <search base="mitre_base_1">
+          <query>| search risk_object_type=user
+| stats values(mitre_tactic) as Tactic values(mitre_technique) as Techniques values(search_name) as Alert dc(mitre_tactic) as count by risk_object
+| sort - count
+| fields - count
+| rename risk_object as "Identity"</query>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Tactics and Techniques by Asset</title>
+      <table>
+        <search base="mitre_base_1">
+          <query>| search risk_object_type=system
+| stats values(mitre_tactic) as Tactic values(mitre_technique) as Techniques values(search_name) as Alert dc(mitre_tactic) as count by risk_object
+| sort - count
+| fields - count
+| rename risk_object as "Asset"</query>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,68 @@
+Collection,"Command And Control","Credential Access","Defense Evasion",Discovery,Execution,Exfiltration,Impact,"Initial Access","Lateral Movement",Persistence,"Privilege Escalation"
+"Audio Capture","Commonly Used Port","Account Manipulation","Access Token Manipulation","Account Discovery",AppleScript,"Automated Exfiltration","Data Destruction","Drive-by Compromise",AppleScript,".bash_profile and .bashrc","Access Token Manipulation"
+"Automated Collection","Communication Through Removable Media","Bash History","Binary Padding","Application Window Discovery",CMSTP,"Data Compressed","Data Encrypted for Impact","Exploit Public-Facing Application","Application Deployment Software","Accessibility Features","Accessibility Features"
+"Clipboard Data","Connection Proxy","Brute Force","BITS Jobs","Browser Bookmark Discovery","Command-Line Interface","Data Encrypted",Defacement,"External Remote Services","Distributed Component Object Model","Account Manipulation","AppCert DLLs"
+"Data from Information Repositories","Custom Command and Control Protocol","Credential Dumping","Bypass User Account Control","Domain Trust Discovery","Compiled HTML File","Data Transfer Size Limits","Disk Content Wipe","Hardware Additions","Exploitation of Remote Services","AppCert DLLs","AppInit DLLs"
+"Data from Local System","Custom Cryptographic Protocol","Credentials in Files","Clear Command History","File and Directory Discovery","Control Panel Items","Exfiltration Over Alternative Protocol","Disk Structure Wipe","Replication Through Removable Media","Logon Scripts","AppInit DLLs","Application Shimming"
+"Data from Network Shared Drive","Data Encoding","Credentials in Registry",CMSTP,"Network Service Scanning","Dynamic Data Exchange","Exfiltration Over Command and Control Channel","Endpoint Denial of Service","Spearphishing Attachment","Pass the Hash","Application Shimming","Bypass User Account Control"
+"Data from Removable Media","Data Obfuscation","Exploitation for Credential Access","Code Signing","Network Share Discovery","Execution through API","Exfiltration Over Other Network Medium","Firmware Corruption","Spearphishing Link","Pass the Ticket","Authentication Package","DLL Search Order Hijacking"
+"Data Staged","Domain Fronting","Forced Authentication","Compile After Delivery","Network Sniffing","Execution through Module Load","Exfiltration Over Physical Medium","Inhibit System Recovery","Spearphishing via Service","Remote Desktop Protocol","BITS Jobs","Dylib Hijacking"
+"Email Collection","Domain Generation Algorithms",Hooking,"Compiled HTML File","Password Policy Discovery","Exploitation for Client Execution","Scheduled Transfer","Network Denial of Service","Supply Chain Compromise","Remote File Copy",Bootkit,"Exploitation for Privilege Escalation"
+"Input Capture","Fallback Channels","Input Capture","Component Firmware","Peripheral Device Discovery","Graphical User Interface",,"Resource Hijacking","Trusted Relationship","Remote Services","Browser Extensions","Extra Window Memory Injection"
+"Man in the Browser","Multi-hop Proxy","Input Prompt","Component Object Model Hijacking","Permission Groups Discovery",InstallUtil,,"Runtime Data Manipulation","Valid Accounts","Replication Through Removable Media","Change Default File Association","File System Permissions Weakness"
+"Screen Capture","Multi-Stage Channels",Kerberoasting,"Control Panel Items","Process Discovery",Launchctl,,"Service Stop",,"Shared Webroot","Component Firmware",Hooking
+"Video Capture","Multiband Communication",Keychain,DCShadow,"Query Registry","Local Job Scheduling",,"Stored Data Manipulation",,"SSH Hijacking","Component Object Model Hijacking","Image File Execution Options Injection"
+,"Multilayer Encryption","LLMNR/NBT-NS Poisoning and Relay","Deobfuscate/Decode Files or Information","Remote System Discovery","LSASS Driver",,"Transmitted Data Manipulation",,"Taint Shared Content","Create Account","Launch Daemon"
+,"Port Knocking","Network Sniffing","Disabling Security Tools","Security Software Discovery",Mshta,,,,"Third-party Software","DLL Search Order Hijacking","New Service"
+,"Remote Access Tools","Password Filter DLL","DLL Search Order Hijacking","System Information Discovery",PowerShell,,,,"Windows Admin Shares","Dylib Hijacking","Path Interception"
+,"Remote File Copy","Private Keys","DLL Side-Loading","System Network Configuration Discovery","Regsvcs/Regasm",,,,"Windows Remote Management","External Remote Services","Plist Modification"
+,"Standard Application Layer Protocol","Securityd Memory","Execution Guardrails","System Network Connections Discovery",Regsvr32,,,,,"File System Permissions Weakness","Port Monitors"
+,"Standard Cryptographic Protocol","Two-Factor Authentication Interception","Exploitation for Defense Evasion","System Owner/User Discovery",Rundll32,,,,,"Hidden Files and Directories","Process Injection"
+,"Standard Non-Application Layer Protocol",,"Extra Window Memory Injection","System Service Discovery","Scheduled Task",,,,,Hooking,"Scheduled Task"
+,"Uncommonly Used Port",,"File Deletion","System Time Discovery",Scripting,,,,,Hypervisor,"Service Registry Permissions Weakness"
+,"Web Service",,"File Permissions Modification","Virtualization/Sandbox Evasion","Service Execution",,,,,"Image File Execution Options Injection","Setuid and Setgid"
+,,,"File System Logical Offsets",,"Signed Binary Proxy Execution",,,,,"Kernel Modules and Extensions","SID-History Injection"
+,,,"Gatekeeper Bypass",,"Signed Script Proxy Execution",,,,,"Launch Agent","Startup Items"
+,,,"Group Policy Modification",,Source,,,,,"Launch Daemon",Sudo
+,,,"Hidden Files and Directories",,"Space after Filename",,,,,Launchctl,"Sudo Caching"
+,,,"Hidden Users",,"Third-party Software",,,,,"LC_LOAD_DYLIB Addition","Valid Accounts"
+,,,"Hidden Window",,Trap,,,,,"Local Job Scheduling","Web Shell"
+,,,HISTCONTROL,,"Trusted Developer Utilities",,,,,"Login Item",
+,,,"Image File Execution Options Injection",,"User Execution",,,,,"Logon Scripts",
+,,,"Indicator Blocking",,"Windows Management Instrumentation",,,,,"LSASS Driver",
+,,,"Indicator Removal from Tools",,"Windows Remote Management",,,,,"Modify Existing Service",
+,,,"Indicator Removal on Host",,"XSL Script Processing",,,,,"Netsh Helper DLL",
+,,,"Indirect Command Execution",,,,,,,"New Service",
+,,,"Install Root Certificate",,,,,,,"Office Application Startup",
+,,,InstallUtil,,,,,,,"Path Interception",
+,,,Launchctl,,,,,,,"Plist Modification",
+,,,"LC_MAIN Hijacking",,,,,,,"Port Knocking",
+,,,Masquerading,,,,,,,"Port Monitors",
+,,,"Modify Registry",,,,,,,"Rc.common",
+,,,Mshta,,,,,,,"Re-opened Applications",
+,,,"Network Share Connection Removal",,,,,,,"Redundant Access",
+,,,"NTFS File Attributes",,,,,,,"Registry Run Keys / Startup Folder",
+,,,"Obfuscated Files or Information",,,,,,,"Scheduled Task",
+,,,"Plist Modification",,,,,,,Screensaver,
+,,,"Port Knocking",,,,,,,"Security Support Provider",
+,,,"Process Doppelgänging",,,,,,,"Service Registry Permissions Weakness",
+,,,"Process Hollowing",,,,,,,"Setuid and Setgid",
+,,,"Process Injection",,,,,,,"Shortcut Modification",
+,,,"Redundant Access",,,,,,,"SIP and Trust Provider Hijacking",
+,,,"Regsvcs/Regasm",,,,,,,"Startup Items",
+,,,Regsvr32,,,,,,,"System Firmware",
+,,,Rootkit,,,,,,,"Systemd Service",
+,,,Rundll32,,,,,,,"Time Providers",
+,,,Scripting,,,,,,,Trap,
+,,,"Signed Binary Proxy Execution",,,,,,,"Valid Accounts",
+,,,"Signed Script Proxy Execution",,,,,,,"Web Shell",
+,,,"SIP and Trust Provider Hijacking",,,,,,,"Windows Management Instrumentation Event Subscription",
+,,,"Software Packing",,,,,,,"Winlogon Helper DLL",
+,,,"Space after Filename",,,,,,,,
+,,,"Template Injection",,,,,,,,
+,,,Timestomp,,,,,,,,
+,,,"Trusted Developer Utilities",,,,,,,,
+,,,"Valid Accounts",,,,,,,,
+,,,"Virtualization/Sandbox Evasion",,,,,,,,
+,,,"Web Service",,,,,,,,
+,,,"XSL Script Processing",,,,,,,,

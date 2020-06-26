@@ -1,0 +1,14 @@
+Tactic,Technique,"technique_count"
+"Command and Control","Commonly Used Port",4
+"Command and Control","Uncommonly Used Port",6
+"Credential Access","Account Manipulation",52
+"Defense Evasion","Disabling Security Tools",2
+"Defense Evasion",Masquerading,4
+Discovery,"System Information Discovery",12
+Execution,PowerShell,10
+Execution,"Scheduled Task",6
+Execution,"User Execution",4
+"Initial Access","Hardware Additions",8
+"Initial Access","Spearphishing Attachment",4
+Persistence,"Scheduled Task",6
+"Privilege Escalation","Scheduled Task",6
