@@ -1,0 +1,26 @@
+/* Custom MITRE map viz */
+
+#mitremaptable table td, #mitremaptable table th {
+    font-size: 10px;
+}
+#mitremaptable  table td {
+    line-height: 14px;
+    padding: 0px 6px;
+    cursor: pointer;
+}
+#mitremaptable  table th {
+    padding: 3px 6px;
+}
+#mitremaptable table td span {
+    display: block;
+    min-height: 27px;
+}
+
+#mitremaptable .tooltip {
+    max-width:140px;
+}
+
+*/
+#mitremaptable table-striped.table-chrome>tbody>tr.even>td, #mitremaptable .table-striped.table-chrome>tbody>tr:nth-child(2n)>td, #mitremaptable  .table-striped.table-chrome>tbody>tr:nth-child(odd).even>td {
+    background-color: #ffffff !important;
+}

@@ -1,4 +1,5 @@
 <nav search_view="search">
+  <view name="attack_matrix_risk_view" default='true'/>
   <collection label="RBA Investigation">
     <view name="RBASystemEvents"></view>
     <view name="RBAUserEvents"></view>
@@ -10,7 +11,7 @@
     <view name="rba_correlation_audit"></view>
   </collection>
 
-  <view name="search" default='true' />
+  <view name="search" />
   <view name="reports" />
   <view name="dashboards" />
 </nav>
