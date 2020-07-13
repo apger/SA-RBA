@@ -118,23 +118,29 @@ class GenerateMitreCommand(GeneratingCommand):
 
 	# Grab all mitre technique context from the mitre dict
 	for i in jsonData["objects"]:
+	    self.logger.info("SA-RBA TEST 1: {}".format(i))
 	    if i['type'] == 'attack-pattern':
 		tactic_name = []
 		tactic_name_id = []
-		for x in i['kill_chain_phases']:
-		    tactic_name.append(x['phase_name'])
-		    tactic_name_id.append(tactics[x['phase_name']])
+                if 'kill_chain_phases' in i :
+		    for x in i['kill_chain_phases']:
+		        tactic_name.append(x['phase_name'])
+		        tactic_name_id.append(tactics[x['phase_name']])
 		result = {}
 		result["mitre_technique_id"] = i['external_references'][0]['external_id']
 		result["mitre_tactic"] = tactic_name
 		result["mitre_tactic_id"] = tactic_name_id
 		result["mitre_technique"] = i['name']
-		result["mitre_description"] = i['description']
+                if 'description' in i:
+		    result["mitre_description"] = i['description']
+                else:
+                    result["mitre_description"] = ""
 		result["mitre_url"] = i['external_references'][0]['url']
 		if "x_mitre_detection" in i:
 		    result["mitre_detection"] = i['x_mitre_detection']
 		else:
 		    result["mitre_detection"]="None"
+	        self.logger.info("SA-RBA TEST 2 result: {}".format(result))
 
 		# lets add threat group and software association based on the technique
 		group_name=[]
