@@ -51,25 +51,6 @@ class GenerateMitreCommand(GeneratingCommand):
 	jsonData = json.loads(search_results.read())
 	self.logger.info("SA-RBA retrieved {} objects from the enterprise ATT&CK dict".format(len(jsonData['objects'])))
 
-	service=client.connect(token=info.auth_token, owner='nobody')
-	collection_name = "mitredict"
-	collection = service.kvstore[collection_name]
-	if collection_name in service.kvstore:
-	    self.logger.info("SA-RBA KVStore Collection {} Found".format(collection_name))
-	    self.logger.info("SA-RBA KVStore Deleting all data from collection {}".format(collection_name))
-	    collection.data.delete()
-
-	    json_obj=json.dumps(collection.data.query())
-	    len_obj=len(json_obj.encode("utf-8"))
-
-	    while len_obj > 4:
-		time.sleep(2)
-		self.logger.info("SA-RBA KVStore Deleting. Size of the collection:{}".format(obj_len))
-		json_obj=json.dumps(collection.data.query())
-		len_obj=len(json_obj.encode("utf-8"))
-	else:
-	    self.logger.info("SA-RBA KVStore Collection {} NOT Found".format(collection_name))
-
 	# Grab all mitre relationship context from the mitre dict.  Techniques will map to these
 	relationships=[]
 	for r in jsonData["objects"]:
@@ -80,6 +61,9 @@ class GenerateMitreCommand(GeneratingCommand):
 	    if r['type'] == 'relationship' and r['source_ref'].startswith("tool--"):
 		relationships.append(relationship(r['id'],r['target_ref'],r['source_ref']))
 	self.logger.info("SA-RBA retrieved {} relationships from the enterprise ATT&CK dict".format(len(relationships)))    
+
+        #The below list will hold all individual (sub)technique stored in the result{} dict.  We will dump this list into the KVStore collection.
+        finalResults=[]
 
 	# Grab all mitre software context from the mitre dict.  Techniques will map to these via relationships
 	softwares=[]
@@ -141,7 +125,6 @@ class GenerateMitreCommand(GeneratingCommand):
 		else:
 		    result["mitre_detection"]=""
                 if "revoked" in i:
-	            self.logger.info("SA-RBA revoked={}".format(i['revoked']))
                     if str(i['revoked']).lower() == str("true"):
                         result["mitre_description"]="revoked"
                         result["mitre_tactic"]="revoked"
@@ -179,6 +162,8 @@ class GenerateMitreCommand(GeneratingCommand):
 		result['mitre_software_platform']=software_platform
 		result['mitre_software_url']=software_url
 
+                finalResults.append(result)
+
 		#send them to stdout if you wanted to carry results into spl for something like an outputlookup
 		#yield {'mitre_technique_id': result["mitre_technique_id"],\
 		#	'mitre_tactic': result["mitre_tactic"],\
@@ -188,21 +173,40 @@ class GenerateMitreCommand(GeneratingCommand):
 		#	'mitre_url': result["mitre_url"],\
 		#	'mitre_detection': result["mitre_detection"]}
 
-				#write it to the KVStore
-		collection.data.insert(json.dumps({"mitre_technique_id": result["mitre_technique_id"],\
-		    "mitre_tactic": result["mitre_tactic"],\
-		    "mitre_tactic_id": result["mitre_tactic_id"],\
-		    "mitre_technique": result["mitre_technique"],\
-		    "mitre_description": result["mitre_description"],\
-		    "mitre_url": result["mitre_url"],\
-		    "mitre_detection": result["mitre_detection"],\
-		    "mitre_threat_group_name": result["mitre_threat_group_name"],\
-		    "mitre_threat_group_aliases": result["mitre_threat_group_aliases"],\
-		    "mitre_threat_group_url": result["mitre_threat_group_url"],\
-		    "mitre_software_name": result["mitre_software_name"],\
-		    "mitre_software_type": result["mitre_software_type"],\
-		    "mitre_software_platform": result["mitre_software_platform"],\
-		    "mitre_software_url": result["mitre_software_url"]}))
+        #Get the KVStore ready to roll
+	service=client.connect(token=info.auth_token, owner='nobody')
+	collection_name = "mitredict"
+	collection = service.kvstore[collection_name]
+	if collection_name in service.kvstore:
+	    self.logger.info("SA-RBA KVStore Collection {} Found".format(collection_name))
+	    self.logger.info("SA-RBA KVStore Deleting all data from collection {}".format(collection_name))
+	    collection.data.delete()
+	    json_obj=json.dumps(collection.data.query())
+	    len_obj=len(json_obj.encode("utf-8"))
+	    while len_obj > 4:
+		time.sleep(2)
+		self.logger.info("SA-RBA KVStore Deleting. Size of the collection:{}".format(obj_len))
+		json_obj=json.dumps(collection.data.query())
+		len_obj=len(json_obj.encode("utf-8"))
+	else:
+	    self.logger.info("SA-RBA KVStore Collection {} NOT Found".format(collection_name))
+
+	#write it to the KVStore
+        for item in finalResults:
+            collection.data.insert(json.dumps({"mitre_technique_id": item["mitre_technique_id"],\
+                "mitre_tactic": item["mitre_tactic"],\
+                "mitre_tactic_id": item["mitre_tactic_id"],\
+	        "mitre_technique": item["mitre_technique"],\
+	        "mitre_description": item["mitre_description"],\
+	        "mitre_url": item["mitre_url"],\
+	        "mitre_detection": item["mitre_detection"],\
+	        "mitre_threat_group_name": item["mitre_threat_group_name"],\
+	        "mitre_threat_group_aliases": item["mitre_threat_group_aliases"],\
+	        "mitre_threat_group_url": item["mitre_threat_group_url"],\
+	        "mitre_software_name": item["mitre_software_name"],\
+	        "mitre_software_type": item["mitre_software_type"],\
+	        "mitre_software_platform": item["mitre_software_platform"],\
+	        "mitre_software_url": item["mitre_software_url"]}))
 
 	self.logger.info("SA-RBA genmitrelookup.py finished")
 	yield {'_time': time.time(),'_raw':'SA-RBA genmitrelookup.py finished'}
