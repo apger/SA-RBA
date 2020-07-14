@@ -7,6 +7,7 @@ import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error,
 #  Rev 1 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Initial release.
 #  Rev 2 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Added MITRE ATT&CK Threat Groups
 #  Rev 3 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Added MITRE ATT&CK Software
+#  Rev 4 author:  Jim Apger, Splunk (mayhem@splunk.com).  July 2020.  Handles the ATT&CK subtechniques.  Fixed KVStore updates to better handle exceptions
 
 class group:
     def __init__(self,intrusion_id,external_id,name,aliases,description,x_mitre_version,url):
@@ -118,7 +119,6 @@ class GenerateMitreCommand(GeneratingCommand):
 
 	# Grab all mitre technique context from the mitre dict
 	for i in jsonData["objects"]:
-	    self.logger.info("SA-RBA TEST 1: {}".format(i))
 	    if i['type'] == 'attack-pattern':
 		tactic_name = []
 		tactic_name_id = []
@@ -139,9 +139,12 @@ class GenerateMitreCommand(GeneratingCommand):
 		if "x_mitre_detection" in i:
 		    result["mitre_detection"] = i['x_mitre_detection']
 		else:
-		    result["mitre_detection"]="None"
-	        self.logger.info("SA-RBA TEST 2 result: {}".format(result))
-
+		    result["mitre_detection"]=""
+                if "revoked" in i:
+	            self.logger.info("SA-RBA revoked={}".format(i['revoked']))
+                    if str(i['revoked']).lower() == str("true"):
+                        result["mitre_description"]="revoked"
+                        result["mitre_tactic"]="revoked"
 		# lets add threat group and software association based on the technique
 		group_name=[]
 		group_alias=[]
