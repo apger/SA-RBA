@@ -204,7 +204,7 @@
 | rex field=threat_object mode=sed "s/\"//g"
 | eval orig_threat_object=threat_object
 | eval threat_object=if(len(threat_object)&gt;20,substr(threat_object,1,20)."...",threat_object)
-| search threat_object=* | eval from=risk_object, to=threat_object, type=risk_object_type | appendpipe [| eval from=threat_object, to="", type=threat_object_type] | lookup attack_web_viz.csv type as type | rename type as linktext, viz as type | eval value=if(linktext=threat_object_type, orig_threat_object, risk_object) | eval to=if(from=to,"",to)</query>
+| search threat_object=* | eval from=risk_object, to=threat_object, type=risk_object_type | appendpipe [| eval from=threat_object, to="", type=threat_object_type] | lookup attack_web_viz.csv type as type | rename threat_object_type as linktext, viz as type | eval value=if(linktext=threat_object_type, orig_threat_object, risk_object) | eval to=if(from=to,"",to)</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
