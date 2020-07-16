@@ -1,0 +1,13 @@
+type,viz,color
+user,users,orange
+system,server,red
+cmdline,code,
+process,code-branch,
+domain,globe,
+usb_vendor,usb,
+usb_serial,usb,
+file_hash,file,
+file,file,
+ssl_hash,lock,
+ip,map-marker-alt,
+file_name,file,
