@@ -43,6 +43,20 @@
     <earliest>-4h</earliest>
     <latest>now</latest>
   </search>
+  <search id="global_tactic_count_base">
+    <query>
+      index=risk
+| fields rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "^(?&lt;mitre_tactic&gt;\S+)\s\-\s(?&lt;mitre_technique_id&gt;\w+)\s\-\s(?&lt;mitre_technique&gt;[^\-]+)\s\-"
+| lookup mitredict mitre_technique_id OUTPUT mitre_tactic
+| stats dc(mitre_technique_id) as techniques_used by mitre_tactic
+| lookup temp_mitre_lookup.csv mitre_tactic OUTPUT count_of_techniques_per_tactic
+| stats values(count_of_techniques_per_tactic) as count_of_techniques_per_tactic values(techniques_used) as techniques_used by mitre_tactic
+| eval result = techniques_used." of ".count_of_techniques_per_tactic
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
   <fieldset submitButton="false">
     <input type="time" token="field1">
       <label></label>
@@ -51,33 +65,57 @@
         <latest>now</latest>
       </default>
     </input>
+    <input type="radio" token="attack_vis">
+      <label>ATT&amp;CK Visibility</label>
+      <choice value="triggered">Triggered</choice>
+      <choice value="covered">Covered</choice>
+      <default>triggered</default>
+      <change>
+        <condition value="triggered">
+          <set token="which_search">Triggered</set>
+          <set token="matrix_choice">attack_environment_counts.csv</set>
+          <set token="matrix_color">"#f81900"</set>
+          <set token="new_search">index=risk
+| fields rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "^(?&lt;mitre_tactic&gt;\S+)\s\-\s(?&lt;mitre_technique_id&gt;\w+)\s\-\s(?&lt;mitre_technique&gt;[^\-]+)\s\-"
+| lookup mitredict mitre_technique_id OUTPUT mitre_tactic
+| stats dc(mitre_technique_id) as techniques_used  by mitre_tactic
+| append [|inputlookup temp_tactic_technique_count.csv ]
+| stats values(techniques_used) as techniques_used, values(total_techniques) as total_techniques by mitre_tactic
+| fillnull value="0" techniques_used
+| eval combo = techniques_used." of ".total_techniques
+| transpose 0 header_field=mitre_tactic
+| search column=combo
+| table initial-access execution persistence privilege-escalation defense-evasion credential-access discovery lateral-movement collection command-and-control exfiltration impact
+| rename initial-access as "Initial Access", execution as Execution, persistence as Persistence, privilege-escalation as "Privilege Escalation", defense-evasion as "Defense Evasion", credential-access as "Credential Access", discovery as Discovery, lateral-movement as "Lateral Movement", collection as Collection, command-and-control as "Command and Control", exfiltration as Exfiltration, impact as Impact</set>
+        </condition>
+        <condition value="covered">
+          <set token="which_search">Covered</set>
+          <set token="matrix_choice">rr_rule_environment_counts.csv</set>
+          <set token="matrix_color">"#3CB371"</set>
+          <set token="new_search">| rest splunk_server=local count=0 /services/saved/searches
+| search action.correlationsearch.label="RR - *"
+| table title,eai:acl.app,action.correlationsearch.label,qualifiedSearch
+| rex field=qualifiedSearch "rule_attack_tactic_technique\=\"(?&lt;tactic&gt;\S+)\s\-\s(?&lt;technique_id&gt;\w+)\s\-\s(?&lt;Technique&gt;[^\-]+)\s\-"
+| lookup attack_matrix_presentable.csv Technique
+| lookup mitredict mitre_technique_id as technique_id
+| fields - mitre_*
+| stats dc(technique_id) as techniques_covered by tactic
+| rename tactic as mitre_tactic
+| append
+    [| inputlookup temp_tactic_technique_count.csv ]
+| stats values(techniques_covered) as techniques_covered, values(total_techniques) as total_techniques by mitre_tactic
+| fillnull value="0" techniques_covered
+| eval combo = techniques_covered." of ".total_techniques
+| transpose 0 header_field=mitre_tactic
+| search column=combo
+| table initial-access execution persistence privilege-escalation defense-evasion credential-access discovery lateral-movement collection command-and-control exfiltration impact
+| rename initial-access as "Initial Access", execution as Execution, persistence as Persistence, privilege-escalation as "Privilege Escalation", defense-evasion as "Defense Evasion", credential-access as "Credential Access", discovery as Discovery, lateral-movement as "Lateral Movement", collection as Collection, command-and-control as "Command and Control", exfiltration as Exfiltration, impact as Impact</set>
+        </condition>
+      </change>
+    </input>
   </fieldset>
   <row>
-    <panel>
-      <single>
-        <title>RBA-Afforded Noisy Notable Decrease (going all-in with RBA)</title>
-        <search>
-          <query>| multisearch
-    [| datamodel Risk All_Risk search
-    | eval attributions="search1"]
-    [ search index=notable search_name=rba*
-    | eval aggregations="search2"]
-| stats count(attributions) as attributions, count(aggregations) as aggregations
-| eval difference=round(100-(aggregations/attributions),2)
-| fields difference</query>
-          <earliest>$field1.earliest$</earliest>
-          <latest>$field1.latest$</latest>
-        </search>
-        <option name="colorMode">block</option>
-        <option name="drilldown">none</option>
-        <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0xdc4e41","0xf1813f","0xf8be34","0x53a051"]</option>
-        <option name="rangeValues">[30,60,80]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-      </single>
-    </panel>
     <panel>
       <single>
         <title>RBA-Afforded Decrease in Notable Count (from legacy notables)</title>
@@ -147,7 +185,20 @@
   </row>
   <row>
     <panel>
-      <title>Risk Attribution in your Environment</title>
+      <table>
+        <title>Techniques $which_search$ in Our Environment</title>
+        <search>
+          <query>$new_search$</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Risk Attribution $which_search$ in your Environment</title>
       <table id="mitremaptable">
         <search>
           <query>| inputlookup attack_matrix.csv
@@ -155,9 +206,9 @@
     [| rex field="&lt;&lt;FIELD&gt;&gt;" "(?&lt;technique_temp&gt;.*) \("
     | eval Technique_nogroups=coalesce(technique_temp,'&lt;&lt;FIELD&gt;&gt;')
     | eval "&lt;&lt;FIELD&gt;&gt; Tactic" = "&lt;&lt;FIELD&gt;&gt;"
-    | lookup attack_environment_counts.csv Technique AS Technique_nogroups, "Tactic" AS "&lt;&lt;FIELD&gt;&gt; Tactic" OUTPUT technique_count
+    | lookup $matrix_choice$ Technique AS Technique_nogroups, "Tactic" AS "&lt;&lt;FIELD&gt;&gt; Tactic" OUTPUT technique_count
     | fields - Technique_nogroups technique_temp
-    | eval count = coalesce(count, 1), temp = "t" + count, {temp}='&lt;&lt;FIELD&gt;&gt;', color="#f81900", colorby="Total"
+    | eval count = coalesce(count, 1), temp = "t" + count, {temp}='&lt;&lt;FIELD&gt;&gt;', color=$matrix_color$, colorby="Total"
     | eval text='&lt;&lt;FIELD&gt;&gt;'
     | eval p0_count=coalesce(technique_count,0)
     | eval total_count=p0_count
