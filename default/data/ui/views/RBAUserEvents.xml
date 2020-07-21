@@ -109,7 +109,7 @@
       </table>
     </panel>
   </row>
-<row>
+  <row>
     <panel depends="$show_web$">
       <title>Attack Web</title>
       <input type="link" token="depth_tok" searchWhenChanged="true">
@@ -192,8 +192,8 @@
         <option name="network-diagram-viz.network-diagram-viz.linkTextLocation">bottom</option>
         <option name="network-diagram-viz.network-diagram-viz.linkTextSize">medium</option>
         <option name="network-diagram-viz.network-diagram-viz.nodeTextSize">medium</option>
-        <option name="network-diagram-viz.network-diagram-viz.smoothEdgeType">dynamic</option>
-        <option name="network-diagram-viz.network-diagram-viz.smoothEdges">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdgeType">dyanmic</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdges">true</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenNode">nd_node_token</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenToNode">nd_to_node_token</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenToolTip">nd_tooltip_token</option>
