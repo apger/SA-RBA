@@ -116,7 +116,7 @@
         <choice value="3">3</choice>
         <change>
           <condition value="1">
-            <set token="depth_tok">OR [search index=risk risk_object="$field_system$""
+            <set token="depth_tok">OR [search index=risk risk_object="$field_system$"
 | eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
 | table threat_object 
 | dedup threat_object 
@@ -128,7 +128,7 @@
     | rename threat_object as search]</set>
           </condition>
           <condition value="2">
-            <set token="depth_tok">OR [search index=risk [search index=risk risk_object="$field_system$""
+            <set token="depth_tok">OR [search index=risk [search index=risk risk_object="$field_system$"
 | eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
 | table threat_object 
 | dedup threat_object 
@@ -140,7 +140,7 @@
     | rename threat_object as search] | table risk_object | dedup risk_object]</set>
           </condition>
           <condition value="3">
-            <set token="depth_tok">OR [search index=risk [search index=risk [search index=risk risk_object="$field_system$""
+            <set token="depth_tok">OR [search index=risk [search index=risk [search index=risk risk_object="$field_system$"
 | eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
 | table threat_object 
 | dedup threat_object 
@@ -165,7 +165,7 @@
       </input>
       <viz type="network-diagram-viz.network-diagram-viz">
         <search>
-          <query>index=risk risk_object="$field_system$"" $depth_tok$
+          <query>index=risk risk_object="$field_system$" $depth_tok$
 | eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
 | table _time risk_object risk_object_type threat_object threat_object_type 
 | rex field=threat_object mode=sed "s/\"//g"
@@ -300,104 +300,7 @@
       </chart>
     </panel>
   </row>
-  <row>
-    <panel>
-      <chart>
-        <title>Risk Attributions by MITRE ATT&amp;CK Tactic</title>
-        <search>
-          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_system$ source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
-| rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
-| makemv delim="|" rule_attack_tactic_technique
-| mvexpand rule_attack_tactic_technique
-| rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;technique_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
-| timechart span=15m sum(count) as count by tactic</query>
-          <earliest>$timepicker.earliest$</earliest>
-          <latest>$timepicker.latest$</latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
-        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
-        <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.visibility">visible</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
-        <option name="charting.axisX.abbreviation">none</option>
-        <option name="charting.axisX.scale">linear</option>
-        <option name="charting.axisY.abbreviation">none</option>
-        <option name="charting.axisY.scale">linear</option>
-        <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
-        <option name="charting.axisY2.scale">inherit</option>
-        <option name="charting.chart">area</option>
-        <option name="charting.chart.bubbleMaximumSize">50</option>
-        <option name="charting.chart.bubbleMinimumSize">10</option>
-        <option name="charting.chart.bubbleSizeBy">area</option>
-        <option name="charting.chart.nullValueMode">zero</option>
-        <option name="charting.chart.showDataLabels">none</option>
-        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-        <option name="charting.chart.stackMode">stacked</option>
-        <option name="charting.chart.style">shiny</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.layout.splitSeries">0</option>
-        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
-        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-        <option name="charting.legend.mode">standard</option>
-        <option name="charting.legend.placement">right</option>
-        <option name="charting.lineWidth">2</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="trellis.enabled">0</option>
-        <option name="trellis.scales.shared">1</option>
-        <option name="trellis.size">medium</option>
-      </chart>
-    </panel>
-    <panel>
-      <chart>
-        <title>Risk Attributions by MITRE ATT&amp;CK Technique</title>
-        <search>
-          <query>| tstats `summariesonly` count from datamodel=Risk where All_Risk.risk_object=$field_system$ source="Threat*" by All_Risk.rule_attack_tactic_technique _time span=15m
-| rename All_Risk.rule_attack_tactic_technique as rule_attack_tactic_technique
-| makemv delim="|" rule_attack_tactic_technique
-| mvexpand rule_attack_tactic_technique
-| rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;technique_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
-| timechart span=15m sum(count) as count by technique</query>
-          <earliest>$timepicker.earliest$</earliest>
-          <latest>$timepicker.latest$</latest>
-          <sampleRatio>1</sampleRatio>
-        </search>
-        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
-        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
-        <option name="charting.axisTitleX.visibility">visible</option>
-        <option name="charting.axisTitleY.visibility">visible</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
-        <option name="charting.axisX.abbreviation">none</option>
-        <option name="charting.axisX.scale">linear</option>
-        <option name="charting.axisY.abbreviation">none</option>
-        <option name="charting.axisY.scale">linear</option>
-        <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
-        <option name="charting.axisY2.scale">inherit</option>
-        <option name="charting.chart">area</option>
-        <option name="charting.chart.bubbleMaximumSize">50</option>
-        <option name="charting.chart.bubbleMinimumSize">10</option>
-        <option name="charting.chart.bubbleSizeBy">area</option>
-        <option name="charting.chart.nullValueMode">zero</option>
-        <option name="charting.chart.showDataLabels">none</option>
-        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
-        <option name="charting.chart.stackMode">stacked</option>
-        <option name="charting.chart.style">shiny</option>
-        <option name="charting.drilldown">none</option>
-        <option name="charting.layout.splitSeries">0</option>
-        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
-        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
-        <option name="charting.legend.mode">standard</option>
-        <option name="charting.legend.placement">right</option>
-        <option name="charting.lineWidth">2</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="trellis.enabled">0</option>
-        <option name="trellis.scales.shared">1</option>
-        <option name="trellis.size">medium</option>
-      </chart>
-    </panel>
-  </row>
+  
   <row>
     <panel>
       <title>Risk Rules triggered for the System (order by first seen)</title>
