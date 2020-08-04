@@ -24,3 +24,30 @@
 #mitremaptable table-striped.table-chrome>tbody>tr.even>td, #mitremaptable .table-striped.table-chrome>tbody>tr:nth-child(2n)>td, #mitremaptable  .table-striped.table-chrome>tbody>tr:nth-child(odd).even>td {
     background-color: #ffffff !important;
 }
+
+/* Secondary MITRE table for tracking risk objects */
+
+#mitremaptable2 table td, #mitremaptable2 table th {
+    font-size: 10px;
+}
+#mitremaptable2  table td {
+    line-height: 14px;
+    padding: 0px 6px;
+    cursor: pointer;
+}
+#mitremaptable2  table th {
+    padding: 3px 6px;
+}
+#mitremaptable2 table td span {
+    display: block;
+    min-height: 27px;
+}
+
+#mitremaptable2 .tooltip {
+    max-width:140px;
+}
+
+*/
+#mitremaptable2 table-striped.table-chrome>tbody>tr.even>td, #mitremaptable2 .table-striped.table-chrome>tbody>tr:nth-child(2n)>td, #mitremaptable2  .table-striped.table-chrome>tbody>tr:nth-child(odd).even>td {
+    background-color: #ffffff !important;
+}
