@@ -3,6 +3,9 @@
   <fieldset submitButton="true" autoRun="true">
     <input type="text" token="field_system" searchWhenChanged="true">
       <label>System</label>
+	  <change>
+        <set token="form.depth_tok">1</set>
+      </change>
     </input>
     <input type="time" token="timepicker">
       <label>Time Range</label>
@@ -180,17 +183,20 @@
         <option name="network-diagram-viz.network-diagram-viz.arrowLocation">end</option>
         <option name="network-diagram-viz.network-diagram-viz.canZoom">true</option>
         <option name="network-diagram-viz.network-diagram-viz.clusterBy">none</option>
+        <option name="network-diagram-viz.network-diagram-viz.defaultLinkLength">100</option>
         <option name="network-diagram-viz.network-diagram-viz.defaultNodeType">circle</option>
         <option name="network-diagram-viz.network-diagram-viz.draggableNodes">true</option>
         <option name="network-diagram-viz.network-diagram-viz.enablePhysics">false</option>
         <option name="network-diagram-viz.network-diagram-viz.hierarchy">true</option>
         <option name="network-diagram-viz.network-diagram-viz.hierarchyDirection">Top-Down</option>
         <option name="network-diagram-viz.network-diagram-viz.hierarchySortMethod">hubsize</option>
-        <option name="network-diagram-viz.network-diagram-viz.linkTextLocation">bottom</option>
+        <option name="network-diagram-viz.network-diagram-viz.levelSeparation">200</option>
+        <option name="network-diagram-viz.network-diagram-viz.linkTextLocation">middle</option>
         <option name="network-diagram-viz.network-diagram-viz.linkTextSize">medium</option>
+        <option name="network-diagram-viz.network-diagram-viz.nodeSpacing">250</option>
         <option name="network-diagram-viz.network-diagram-viz.nodeTextSize">medium</option>
-        <option name="network-diagram-viz.network-diagram-viz.smoothEdgeType">dynamic</option>
-        <option name="network-diagram-viz.network-diagram-viz.smoothEdges">false</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdgeType">dyanmic</option>
+        <option name="network-diagram-viz.network-diagram-viz.smoothEdges">true</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenNode">nd_node_token</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenToNode">nd_to_node_token</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenToolTip">nd_tooltip_token</option>
