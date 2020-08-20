@@ -94,25 +94,40 @@
           </condition>
         </change>
       </input>
-      <table>
-        <title>Identity Details</title>
+      <viz type="event-timeline-viz.event-timeline-viz">
+        <title>Risk Rule Timeline</title>
         <search>
-          <query>| from datamodel:"Identity_Management.All_Identities" | search identity="$field_user$" |eval fullname=if(isnull(first),last,first." ".last) |table fullname identity email phone priority bunit category work_city work_country</query>
+          <query>|from datamodel:"Risk.All_Risk"
+|search risk_object=$field_user$ search_name="Threat*" |  eval source=replace(source,"\w+\s+-\s+\w+\s+-\s+([^-]+)\s+-.*","\1")
+| table _time source risk_message threat_object | eval start=_time, label=source, tooltip=risk_message, data=threat_object | dedup _time label threat_object</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
-        <option name="drilldown">cell</option>
+        <option name="drilldown">all</option>
+        <option name="event-timeline-viz.event-timeline-viz.backgroundColor">#ffffff</option>
+        <option name="event-timeline-viz.event-timeline-viz.eventColor">#dc4e41</option>
+        <option name="event-timeline-viz.event-timeline-viz.maxZoom">2629746000</option>
+        <option name="event-timeline-viz.event-timeline-viz.minZoom">60000</option>
+        <option name="event-timeline-viz.event-timeline-viz.orientation">bottom</option>
+        <option name="event-timeline-viz.event-timeline-viz.showCurrentTime">true</option>
+        <option name="event-timeline-viz.event-timeline-viz.sortGroupsBy">time</option>
+        <option name="event-timeline-viz.event-timeline-viz.stack">true</option>
+        <option name="event-timeline-viz.event-timeline-viz.textColor">#ffffff</option>
+        <option name="event-timeline-viz.event-timeline-viz.tokenAllVisible">tok_et_all_visible</option>
+        <option name="event-timeline-viz.event-timeline-viz.tokenData">tok_et_data</option>
+        <option name="event-timeline-viz.event-timeline-viz.tokenEnd">tok_et_end</option>
+        <option name="event-timeline-viz.event-timeline-viz.tokenLabel">tok_et_label</option>
+        <option name="event-timeline-viz.event-timeline-viz.tokenStart">tok_et_start</option>
+        <option name="event-timeline-viz.event-timeline-viz.tooltipDateFormat">YYYY-MM-DD</option>
+        <option name="event-timeline-viz.event-timeline-viz.tooltipTimeFormat">h:mm:ss A</option>
         <option name="refresh.display">progressbar</option>
-        <format type="color" field="priority">
-          <colorPalette type="map">{"critical":0xD25B3B,"high":0xFF8800,"medium":0xF0BE1B,"low":0x98BF3B,"informational":0x5378AD,"unknown":0x999999}</colorPalette>
-        </format>
         <drilldown>
-          <link target="_blank">/app/SplunkEnterpriseSecuritySuite/identity_center?form.username=$row.email$</link>
+          <link target="_blank">search?q=%7Cfrom%20datamodel:%22Risk.All_Risk%22%0A%7Csearch%20risk_object=%22$field_user$%22%20search_name=%22*$tok_et_label$*%22&amp;earliest=$timepicker.earliest$&amp;latest=$timepicker.latest$</link>
         </drilldown>
-      </table>
+      </viz>
     </panel>
   </row>
-  <row>
+    <row>
     <panel depends="$show_web$">
       <title>Attack Web</title>
       <input type="link" token="depth_tok" searchWhenChanged="true">
@@ -122,66 +137,44 @@
         <choice value="3">3</choice>
         <change>
           <condition value="1">
-            <set token="depth_tok">OR [search index=risk risk_object="$field_user$"
-| eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
-| table threat_object 
-| dedup threat_object 
-    | rex mode=sed field=threat_object "s/\\\/\\\\\\\\/g"
-    | rex mode=sed field=threat_object "s/\"/\\\\\"/g" 
-    | eval threat_object="\"".threat_object."\""
-| mvcombine threat_object delim=" OR " 
-| nomv threat_object 
-    | rename threat_object as search]</set>
+            <set token="depth_tok"></set>
           </condition>
           <condition value="2">
-            <set token="depth_tok">OR [search index=risk [search index=risk risk_object="$field_user$"
-| eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
-| table threat_object 
-| dedup threat_object 
-    | rex mode=sed field=threat_object "s/\\\/\\\\\\\\/g"
-    | rex mode=sed field=threat_object "s/\"/\\\\\"/g" 
-    | eval threat_object="\"".threat_object."\""
-| mvcombine threat_object delim=" OR " 
-| nomv threat_object 
-    | rename threat_object as search] | table risk_object | dedup risk_object]</set>
+            <set token="depth_tok">OR All_Risk.threat_object IN [|tstats `summariesonly` count from datamodel=Risk.All_Risk where All_Risk.risk_object="$field_user$" by All_Risk.threat_object
+| fields All_Risk.threat_object
+| mvcombine All_Risk.threat_object delim="\",\"" 
+| nomv All_Risk.threat_object 
+    | rename All_Risk.threat_object as search | eval search="(\"".search."\")" ]</set>
           </condition>
           <condition value="3">
-            <set token="depth_tok">OR [search index=risk [search index=risk [search index=risk risk_object="$field_user$"
-| eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
-| table threat_object 
-| dedup threat_object 
-    | rex mode=sed field=threat_object "s/\\\/\\\\\\\\/g"
-    | rex mode=sed field=threat_object "s/\"/\\\\\"/g" 
-    | eval threat_object="\"".threat_object."\""
-| mvcombine threat_object delim=" OR " 
-| nomv threat_object 
-    | rename threat_object as search] | table risk_object | dedup risk_object]| eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
-| table threat_object 
-| dedup threat_object 
-    | rex mode=sed field=threat_object "s/\\\/\\\\\\\\/g"
-    | rex mode=sed field=threat_object "s/\"/\\\\\"/g" 
-    | eval threat_object="\"".threat_object."\""
-| mvcombine threat_object delim=" OR " 
-| nomv threat_object 
-    | rename threat_object as search]</set>
+            <set token="depth_tok">OR All_Risk.risk_object IN [| tstats `summariesonly` count from datamodel=Risk.All_Risk where All_Risk.threat_object IN [|tstats `summariesonly` count from datamodel=Risk.All_Risk where All_Risk.risk_object="$field_user$" by All_Risk.threat_object
+| fields All_Risk.threat_object
+| mvcombine All_Risk.threat_object delim="\",\"" 
+| nomv All_Risk.threat_object 
+    | rename All_Risk.threat_object as search | eval search="(\"".search."\")" ] by All_Risk.risk_object
+| fields All_Risk.risk_object
+| mvcombine All_Risk.risk_object delim=","
+| nomv All_Risk.risk_object
+| rename All_Risk.risk_object as search  | eval search="(".search.")"]</set>
           </condition>
         </change>
         <default>1</default>
         <initialValue>1</initialValue>
       </input>
       <viz type="network-diagram-viz.network-diagram-viz">
-        <search>
-          <query>index=risk risk_object="$field_user$" $depth_tok$
+        <search depends="$show_web$">
+          <query>| tstats `summariesonly` count from datamodel=Risk.All_Risk where All_Risk.risk_object="$field_user$" $depth_tok$ by All_Risk.risk_object, All_Risk.risk_object_type, All_Risk.threat_object, All_Risk.threat_object_type 
+          | rename All_Risk.* as *
 | eval threat_object_type=if(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule","user",threat_object_type), threat_object=case(isnull(threat_object) AND search_name="Threat - RR - User Account Changes - Combined - Rule" AND NOT user="-",user,threat_object_type="process" AND isnotnull(cmdline),cmdline,true(),threat_object)
-| table _time risk_object risk_object_type threat_object threat_object_type 
+| table risk_object risk_object_type threat_object threat_object_type 
 | rex field=threat_object mode=sed "s/\"//g"
 | eval orig_threat_object=threat_object
-| eval threat_object=if(len(threat_object)&gt;25,substr(threat_object,1,25)."...",threat_object)
-| search threat_object=* | eval from=risk_object, to=threat_object, type=risk_object_type | appendpipe [| eval from=threat_object, to="", type=threat_object_type] | lookup attack_web_viz type as type | eval linktext=threat_object_type | rename viz as type  | eval value=if(from=threat_object, orig_threat_object, risk_object) | eval to=if(from=to, "", to)</query>
+| eval threat_object=if(len(threat_object)&gt;25,substr(threat_object,1,23)."...",threat_object)
+| search threat_object=* | eval from=risk_object, to=threat_object, type=risk_object_type | appendpipe [| eval from=threat_object, to="", type=threat_object_type] | lookup attack_web_viz.csv type as type | eval linktext=threat_object_type | rename viz as type  | eval value=if(from=threat_object, orig_threat_object, risk_object) | eval to=if(from=to, "", to)</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
-        <option name="drilldown">all</option>
+        <option name="drilldown">none</option>
         <option name="height">1000</option>
         <option name="network-diagram-viz.network-diagram-viz.arrowLocation">end</option>
         <option name="network-diagram-viz.network-diagram-viz.canZoom">true</option>
@@ -205,10 +198,27 @@
         <option name="network-diagram-viz.network-diagram-viz.tokenToolTip">nd_tooltip_token</option>
         <option name="network-diagram-viz.network-diagram-viz.tokenValue">nd_value_token</option>
         <option name="refresh.display">none</option>
-        <drilldown>
-          <set token="chain_value">$row.from$</set>
-        </drilldown>
       </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Identity Details</title>
+        <search>
+          <query>| from datamodel:"Identity_Management.All_Identities" | search identity="$field_user$" |eval fullname=if(isnull(first),last,first." ".last) |table fullname identity email phone priority bunit category work_city work_country</query>
+          <earliest>$timepicker.earliest$</earliest>
+          <latest>$timepicker.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="priority">
+          <colorPalette type="map">{"critical":0xD25B3B,"high":0xFF8800,"medium":0xF0BE1B,"low":0x98BF3B,"informational":0x5378AD,"unknown":0x999999}</colorPalette>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/SplunkEnterpriseSecuritySuite/identity_center?form.username=$row.email$</link>
+        </drilldown>
+      </table>
     </panel>
   </row>
   <row>

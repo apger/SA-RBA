@@ -9,3 +9,4 @@ Network Diagram Viz: https://splunkbase.splunk.com/app/4438/
 
 Sankey Diagram - Custom Visualization:  https://splunkbase.splunk.com/app/3112/
 
+Event Timeline Viz: https://splunkbase.splunk.com/app/4370/
