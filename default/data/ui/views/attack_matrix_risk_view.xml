@@ -11,37 +11,19 @@
     <earliest>$field1.earliest$</earliest>
     <latest>$field1.latest$</latest>
   </search>
-  <search id="sseanalytics_base_1">
+  <search id="global_tactic_count_base">
     <query>
-      | sseanalytics
-        | lookup use_cases.csv title AS "usecase" OUTPUT order_title AS use_case_order_title
-        | eval "Use Case Orig"=if(isnull('usecase'),"Other",'usecase')
-        | eval "Use Case"=if(isnull(use_case_order_title), "9_Other",use_case_order_title)
-        | eval "Has Data"=if(data_available="Good" OR data_available="Mixed", "Yes", "No")
-        | eval Status=case(
-        'enabled'="Yes" AND 'Has Data'="Yes","Active",
-        'enabled'!="Yes" AND 'Has Data'="Yes","Available",
-        1=1,"Needs data"
-        )
-        | eval App=displayapp, Enabled=enabled, Title=name, Journey=journey, "Data Source"=datasource, "Data Source Category"=data_source_categories_display
-        | where (mitre_tactic_display!="" AND mitre_tactic_display!="None") OR (mitre_technique_display!="" AND mitre_technique_display!="None" AND mvcount(mitre_technique_display)&gt;0)
-        | eval "MITRE Tactic"=if('mitre_tactic_display'="","-",'mitre_tactic_display'), "MITRE Technique"=mitre_technique_display, "MITRE Threat Group"=mitre_threat_groups, "MITRE Platforms"=mitre_platforms |  eval Status=if(in(datasource,"*"), "Selected",Status)
-| search Status="*" "App"="*" "Data Source"="*" "Data Source Category"="*" "bookmark_status"="*" "highlight"="*" "MITRE Tactic"="*" "MITRE Technique"="*" "MITRE Threat Group"="*" "MITRE Platforms" IN(Enterprise)
-| where like(lower(Title),"%".lower("")."%") OR like(lower(Description),"%".lower("")."%") OR like(lower('Data Source'),"%".lower("")."%") OR like(lower('Data Source Category'),"%".lower("")."%") OR like(lower('Use Case'),"%".lower("")."%")
-| eval "Selected_New"=case(isnotnull('Data Source') AND in('Data Source',"*"), 'Selected',isnotnull('Data Source') AND NOT in('Data Source',"*"),0,1=1,'Selected')
-| eval m="Move the overlapping entries to Phase 2 so they dont get lost while filtering"
-| fields - m
-| eval "Needs data"=if('Selected_New'=0 AND 'Selected'&gt;0, coalesce('Needs data',0)+coalesce('Selected',0), coalesce('Needs data',0))
-| rename "Selected_New" AS "Selected"
-
-| eval Total='Active'+'Available'+'Needs data'+'Selected'
-| sort Journey
-| eval "Use Case"='Use Case Orig',"Bookmark Status"=bookmark_status_display, Featured=highlight, "Data Availability"=data_available,Enabled=enabled,"Data Coverage"=data_available_numeric
-| eval "Data Source"=mvdedup('Data Source')
-| table Journey Status Title Description "Data Source" "Data Source Category" "Use Case" "MITRE Tactic" "MITRE Technique" App "Bookmark Status" Featured Enabled "Data Availability" "Data Coverage"
+      index=risk
+| fields rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "^(?&lt;mitre_tactic&gt;\S+)\s\-\s(?&lt;mitre_technique_id&gt;\w+)\s\-\s(?&lt;mitre_technique&gt;[^\-]+)\s\-"
+| lookup mitredict mitre_technique_id OUTPUT mitre_tactic
+| stats dc(mitre_technique_id) as techniques_used by mitre_tactic
+| lookup temp_mitre_lookup.csv mitre_tactic OUTPUT count_of_techniques_per_tactic
+| stats values(count_of_techniques_per_tactic) as count_of_techniques_per_tactic values(techniques_used) as techniques_used by mitre_tactic
+| eval result = techniques_used." of ".count_of_techniques_per_tactic
     </query>
-    <earliest>-4h</earliest>
-    <latest>now</latest>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
   </search>
   <fieldset submitButton="false">
     <input type="time" token="field1">
@@ -51,33 +33,57 @@
         <latest>now</latest>
       </default>
     </input>
+    <input type="radio" token="attack_vis">
+      <label>ATT&amp;CK Visibility</label>
+      <choice value="triggered">Triggered</choice>
+      <choice value="covered">Covered</choice>
+      <default>triggered</default>
+      <change>
+        <condition value="triggered">
+          <set token="which_search">Triggered</set>
+          <set token="matrix_choice">attack_environment_counts.csv</set>
+          <set token="matrix_color">"#f81900"</set>
+          <set token="new_search">index=risk
+| fields rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "^(?&lt;mitre_tactic&gt;\S+)\s\-\s(?&lt;mitre_technique_id&gt;\w+)\s\-\s(?&lt;mitre_technique&gt;[^\-]+)\s\-"
+| lookup mitredict mitre_technique_id OUTPUT mitre_tactic
+| stats dc(mitre_technique_id) as techniques_used  by mitre_tactic
+| append [|inputlookup temp_tactic_technique_count.csv ]
+| stats values(techniques_used) as techniques_used, values(total_techniques) as total_techniques by mitre_tactic
+| fillnull value="0" techniques_used
+| eval combo = techniques_used." of ".total_techniques
+| transpose 0 header_field=mitre_tactic
+| search column=combo
+| table initial-access execution persistence privilege-escalation defense-evasion credential-access discovery lateral-movement collection command-and-control exfiltration impact
+| rename initial-access as "Initial Access", execution as Execution, persistence as Persistence, privilege-escalation as "Privilege Escalation", defense-evasion as "Defense Evasion", credential-access as "Credential Access", discovery as Discovery, lateral-movement as "Lateral Movement", collection as Collection, command-and-control as "Command and Control", exfiltration as Exfiltration, impact as Impact</set>
+        </condition>
+        <condition value="covered">
+          <set token="which_search">Covered</set>
+          <set token="matrix_choice">rr_rule_environment_counts.csv</set>
+          <set token="matrix_color">"#3CB371"</set>
+          <set token="new_search">| rest splunk_server=local count=0 /services/saved/searches
+| search action.correlationsearch.label="RR - *"
+| table title,eai:acl.app,action.correlationsearch.label,qualifiedSearch
+| rex field=qualifiedSearch "rule_attack_tactic_technique\=\"(?&lt;tactic&gt;\S+)\s\-\s(?&lt;technique_id&gt;\w+)\s\-\s(?&lt;Technique&gt;[^\-]+)\s\-"
+| lookup attack_matrix_presentable.csv Technique
+| lookup mitredict mitre_technique_id as technique_id
+| fields - mitre_*
+| stats dc(technique_id) as techniques_covered by tactic
+| rename tactic as mitre_tactic
+| append
+    [| inputlookup temp_tactic_technique_count.csv ]
+| stats values(techniques_covered) as techniques_covered, values(total_techniques) as total_techniques by mitre_tactic
+| fillnull value="0" techniques_covered
+| eval combo = techniques_covered." of ".total_techniques
+| transpose 0 header_field=mitre_tactic
+| search column=combo
+| table initial-access execution persistence privilege-escalation defense-evasion credential-access discovery lateral-movement collection command-and-control exfiltration impact
+| rename initial-access as "Initial Access", execution as Execution, persistence as Persistence, privilege-escalation as "Privilege Escalation", defense-evasion as "Defense Evasion", credential-access as "Credential Access", discovery as Discovery, lateral-movement as "Lateral Movement", collection as Collection, command-and-control as "Command and Control", exfiltration as Exfiltration, impact as Impact</set>
+        </condition>
+      </change>
+    </input>
   </fieldset>
   <row>
-    <panel>
-      <single>
-        <title>RBA-Afforded Noisy Notable Decrease (going all-in with RBA)</title>
-        <search>
-          <query>| multisearch
-    [| datamodel Risk All_Risk search
-    | eval attributions="search1"]
-    [ search index=notable search_name=rba*
-    | eval aggregations="search2"]
-| stats count(attributions) as attributions, count(aggregations) as aggregations
-| eval difference=round(100-(aggregations/attributions),2)
-| fields difference</query>
-          <earliest>$field1.earliest$</earliest>
-          <latest>$field1.latest$</latest>
-        </search>
-        <option name="colorMode">block</option>
-        <option name="drilldown">none</option>
-        <option name="numberPrecision">0.00</option>
-        <option name="rangeColors">["0xdc4e41","0xf1813f","0xf8be34","0x53a051"]</option>
-        <option name="rangeValues">[30,60,80]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-      </single>
-    </panel>
     <panel>
       <single>
         <title>RBA-Afforded Decrease in Notable Count (from legacy notables)</title>
@@ -147,7 +153,20 @@
   </row>
   <row>
     <panel>
-      <title>Risk Attribution in your Environment</title>
+      <table>
+        <title>Techniques $which_search$ in Our Environment</title>
+        <search>
+          <query>$new_search$</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Risk Attribution $which_search$ in your Environment</title>
       <table id="mitremaptable">
         <search>
           <query>| inputlookup attack_matrix.csv
@@ -155,13 +174,13 @@
     [| rex field="&lt;&lt;FIELD&gt;&gt;" "(?&lt;technique_temp&gt;.*) \("
     | eval Technique_nogroups=coalesce(technique_temp,'&lt;&lt;FIELD&gt;&gt;')
     | eval "&lt;&lt;FIELD&gt;&gt; Tactic" = "&lt;&lt;FIELD&gt;&gt;"
-    | lookup attack_environment_counts.csv Technique AS Technique_nogroups, "Tactic" AS "&lt;&lt;FIELD&gt;&gt; Tactic" OUTPUT technique_count
+    | lookup $matrix_choice$ Technique AS Technique_nogroups, "Tactic" AS "&lt;&lt;FIELD&gt;&gt; Tactic" OUTPUT technique_count
     | fields - Technique_nogroups technique_temp
-    | eval count = coalesce(count, 1), temp = "t" + count, {temp}='&lt;&lt;FIELD&gt;&gt;', color="#f81900", colorby="Total"
+    | eval count = coalesce(count, 1), temp = "t" + count, {temp}='&lt;&lt;FIELD&gt;&gt;', color=$matrix_color$, colorby="Total"
     | eval text='&lt;&lt;FIELD&gt;&gt;'
     | eval p0_count=coalesce(technique_count,0)
     | eval total_count=p0_count
-    | eval opacity=tostring(total_count/20)
+    | eval opacity=tostring(total_count/5)
     | eval tooltip="Events: ".total_count."&lt;br /&gt;"
     | eval "&lt;&lt;FIELD&gt;&gt;" = if(text!="",mvappend(text,color,opacity,tooltip),null)
     | eval count = count + 1 ]
@@ -184,58 +203,48 @@
   </row>
   <row>
     <panel>
-      <single>
-        <title>OotB Content Available and In Use</title>
-        <search base="sseanalytics_base_1">
-          <query>| search Status="Active"
-| stats count
-| eval percentage=round(((count/373)*100),0)
-| fields percentage</query>
+      <title>Risk Object Attribution</title>
+      <input type="text" token="risk_object_tok" searchWhenChanged="true">
+        <label>Enter Risk Object Name</label>
+        <default>*</default>
+        <initialValue>*</initialValue>
+      </input>
+      <table id="mitremaptable2">
+        <search>
+          <query>| inputlookup attack_matrix.csv
+| foreach *
+    [| rex field="&lt;&lt;FIELD&gt;&gt;" "(?&lt;technique_temp&gt;.*) \("
+    | eval Technique_nogroups=coalesce(technique_temp,'&lt;&lt;FIELD&gt;&gt;')
+    | eval "&lt;&lt;FIELD&gt;&gt; Tactic" = "&lt;&lt;FIELD&gt;&gt;"
+    | lookup risk_object_attack_environment_counts.csv Technique AS Technique_nogroups, "Tactic" AS "&lt;&lt;FIELD&gt;&gt; Tactic" OUTPUT risk_object
+    | eval risk_object=split('risk_object',",")
+    | eval "risk_object"=mvfilter(match('risk_object',"$risk_object_tok$"))
+    | rex field="risk_object" "(?&lt;risk_object&gt;[^:]*)::(?&lt;risk_object_count&gt;.*)"
+    | eval Selected=if(in('risk_object',"$risk_object_tok$") , risk_object_count,0)
+    | eval Selected=tonumber(coalesce(mvindex(Selected,0,0),0))+tonumber(coalesce(mvindex(Selected,1,1),0))+tonumber(coalesce(mvindex(Selected,2,2),0))+tonumber(coalesce(mvindex(Selected,3,3),0))+tonumber(coalesce(mvindex(Selected,4,4),0))+tonumber(coalesce(mvindex(Selected,5,5),0))+tonumber(coalesce(mvindex(Selected,6,6),0))
+    | fields - Technique_nogroups technique_temp
+    | eval count = coalesce(count, 1), temp = "t" + count, {temp}='&lt;&lt;FIELD&gt;&gt;', color="#9A32CD", colorby="Selected"
+    | eval text='&lt;&lt;FIELD&gt;&gt;'
+    | eval p0_count=coalesce(risk_object_count,0)
+    | eval opacity=tostring(risk_object_count/5)
+    | eval tooltip="Events: ".risk_object_count."&lt;br /&gt;"
+    | eval "&lt;&lt;FIELD&gt;&gt;" = if(text!="",mvappend(text,color,opacity,tooltip),null)
+    | eval count = count + 1 ]
+| fields - temp count Active Available "Needs data" tooltip *Tactic color colorby opacity p0* p1* p2* t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 t18 text total_count "Data Source" Data_Source_Count Selected p3_count technique_count
+| table "Initial Access" Execution Persistence "Privilege Escalation" "Defense Evasion" "Credential Access" Discovery "Lateral Movement" Collection "Command And Control" Exfiltration Impact</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
         </search>
-        <option name="colorMode">block</option>
-        <option name="numberPrecision">0</option>
-        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
-        <option name="rangeValues">[25,70]</option>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
         <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-      </single>
-    </panel>
-    <panel>
-      <single>
-        <title>OotB Content Not Usable Today (No Data)</title>
-        <search base="sseanalytics_base_1">
-          <query>| search Status="Available"
-| stats count
-| eval percentage=round(((count/373)*100),0)
-| fields percentage</query>
-        </search>
-        <option name="colorMode">block</option>
-        <option name="numberPrecision">0</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
-        <option name="rangeValues">[30,50,80]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-      </single>
-    </panel>
-    <panel>
-      <single>
-        <title>OotB Content Available and NOT In Use</title>
-        <search base="sseanalytics_base_1">
-          <query>| search Status="Needs Data"
-| stats count
-| eval percentage=round(((count/373)*100),0)
-| fields percentage</query>
-        </search>
-        <option name="colorMode">block</option>
-        <option name="numberPrecision">0</option>
-        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
-        <option name="rangeValues">[5,25]</option>
-        <option name="refresh.display">progressbar</option>
-        <option name="unit">%</option>
-        <option name="useColors">1</option>
-      </single>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
     </panel>
   </row>
   <row>

@@ -112,7 +112,7 @@
       </table>
     </panel>
   </row>
-<row>
+  <row>
     <panel depends="$show_web$">
       <title>Attack Web</title>
       <input type="link" token="depth_tok" searchWhenChanged="true">
