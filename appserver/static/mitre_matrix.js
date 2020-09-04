@@ -64,6 +64,14 @@ require([
             tableView.addCellRenderer(new MitreMapTableRenderer());
         });
     }
+    if (mvc.Components.get('mitremaptable2')) {
+
+        mvc.Components.get('mitremaptable2').getVisualization(function(tableView) {
+            // Register custom cell renderer, the table will re-render automatically
+            tableView.addCellRenderer(new MitreMapTableRenderer());
+        });
+    }
+
 });
 
 function hexToRgb(hex) {
