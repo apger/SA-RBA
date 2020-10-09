@@ -24,6 +24,55 @@
     </query>
     <earliest>$field1.earliest$</earliest>
     <latest>$field1.latest$</latest>
+    <done>
+      <unset token="reset_token"></unset>
+      <set token="reset_token">reset_token_value</set>
+    </done>
+  </search>
+  <search id="populate_risk_attribution_counts">
+    <query>
+    index=risk
+| fields search_name rule_attack_tactic_technique mitre_tactic mitre_technique risk_object risk_object_type impact
+| rex field=rule_attack_tactic_technique "^(?&lt;tactic_name&gt;[\w]+)\s\-\s(?&lt;mitre_technique_id&gt;[\S]+)\s\-\s(?&lt;Technique&gt;[^\-]+)\s\-\shttps"
+| lookup attack_matrix_presentable.csv Technique
+| table Tactic Technique
+| stats count as technique_count by Tactic Technique
+| outputlookup attack_environment_counts.csv
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
+  <search id="populate_mitre_matrix_coverage_from_rr_rules">
+    <query>
+      | rest splunk_server=local count=0 /services/saved/searches
+| search action.correlationsearch.label="RR - *"
+| table title,eai:acl.app,action.correlationsearch.label,qualifiedSearch
+| rex field=qualifiedSearch "rule_attack_tactic_technique\=\"(?&lt;tactic&gt;\S+)\s\-\s(?&lt;technique_id&gt;\w+)\s\-\s(?&lt;Technique&gt;[^\-]+)\s\-"
+| lookup attack_matrix_presentable.csv Technique
+| table Tactic Technique
+| stats count as technique_count by Tactic Technique
+| outputlookup rr_rule_environment_counts.csv
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
+  <search id="populate_risk_object_attack_env_counts_lookup">
+    <query>
+      | tstats `summariesonly` count from datamodel=Risk where source="Threat*" by All_Risk.rule_attack_tactic_technique, All_Risk.risk_object
+| rename All_Risk.* as *
+| makemv delim="|" rule_attack_tactic_technique
+| mvexpand rule_attack_tactic_technique
+| rex field=rule_attack_tactic_technique "(^|\|)(?&lt;tactic&gt;.+?) - (?&lt;technique_num&gt;.+?) - (?&lt;technique&gt;.+?) - (?&lt;technique_ref&gt;.*)"
+| lookup attack_matrix_presentable.csv Technique as technique OUTPUT Tactic, Technique
+| stats count as risk_object_count by Tactic Technique risk_object
+| eval risk_object=risk_object."::".risk_object_count
+| mvcombine delim="," risk_object
+| nomv risk_object
+| fields - risk_object_count
+| outputlookup risk_object_attack_environment_counts.csv
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
   </search>
   <fieldset submitButton="false">
     <input type="time" token="field1">
@@ -54,6 +103,7 @@
 | eval combo = techniques_used." of ".total_techniques
 | transpose 0 header_field=mitre_tactic
 | search column=combo
+| eval reset_token="$reset_token$"
 | table initial-access execution persistence privilege-escalation defense-evasion credential-access discovery lateral-movement collection command-and-control exfiltration impact
 | rename initial-access as "Initial Access", execution as Execution, persistence as Persistence, privilege-escalation as "Privilege Escalation", defense-evasion as "Defense Evasion", credential-access as "Credential Access", discovery as Discovery, lateral-movement as "Lateral Movement", collection as Collection, command-and-control as "Command and Control", exfiltration as Exfiltration, impact as Impact</set>
         </condition>
@@ -77,6 +127,7 @@
 | eval combo = techniques_covered." of ".total_techniques
 | transpose 0 header_field=mitre_tactic
 | search column=combo
+| eval reset_token="$reset_token$"
 | table initial-access execution persistence privilege-escalation defense-evasion credential-access discovery lateral-movement collection command-and-control exfiltration impact
 | rename initial-access as "Initial Access", execution as Execution, persistence as Persistence, privilege-escalation as "Privilege Escalation", defense-evasion as "Defense Evasion", credential-access as "Credential Access", discovery as Discovery, lateral-movement as "Lateral Movement", collection as Collection, command-and-control as "Command and Control", exfiltration as Exfiltration, impact as Impact</set>
         </condition>
@@ -184,7 +235,8 @@
     | eval tooltip="Events: ".total_count."&lt;br /&gt;"
     | eval "&lt;&lt;FIELD&gt;&gt;" = if(text!="",mvappend(text,color,opacity,tooltip),null)
     | eval count = count + 1 ]
-| fields - temp count Active Available "Needs data" tooltip *Tactic color colorby opacity p0* p1* p2* t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 t18 text total_count "Data Source" Data_Source_Count Selected p3_count technique_count
+| eval reset_token="$reset_token$"
+| fields - temp count Active Available "Needs data" tooltip *Tactic color colorby opacity p0* p1* p2* t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 t18 text total_count "Data Source" Data_Source_Count Selected p3_count technique_count reset_token
 | table "Initial Access" Execution Persistence "Privilege Escalation" "Defense Evasion" "Credential Access" Discovery "Lateral Movement" Collection "Command And Control" Exfiltration Impact</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
@@ -230,7 +282,8 @@
     | eval tooltip="Events: ".risk_object_count."&lt;br /&gt;"
     | eval "&lt;&lt;FIELD&gt;&gt;" = if(text!="",mvappend(text,color,opacity,tooltip),null)
     | eval count = count + 1 ]
-| fields - temp count Active Available "Needs data" tooltip *Tactic color colorby opacity p0* p1* p2* t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 t18 text total_count "Data Source" Data_Source_Count Selected p3_count technique_count
+    | eval reset_token="$reset_token$"
+| fields - temp count Active Available "Needs data" tooltip *Tactic color colorby opacity p0* p1* p2* t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17 t18 text total_count "Data Source" Data_Source_Count Selected p3_count technique_count reset_token
 | table "Initial Access" Execution Persistence "Privilege Escalation" "Defense Evasion" "Credential Access" Discovery "Lateral Movement" Collection "Command And Control" Exfiltration Impact</query>
           <earliest>$field1.earliest$</earliest>
           <latest>$field1.latest$</latest>
