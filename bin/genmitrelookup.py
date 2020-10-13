@@ -3,6 +3,7 @@ sys.path.append("../lib")
 from splunklib.searchcommands import dispatch, GeneratingCommand, Configuration
 import splunklib.client as client
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error, six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+import os
 
 #  Rev 1 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Initial release.
 #  Rev 2 author:  Jim Apger, Splunk (mayhem@splunk.com).  April 2020.  Added MITRE ATT&CK Threat Groups
