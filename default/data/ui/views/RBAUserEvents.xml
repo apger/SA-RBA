@@ -98,8 +98,8 @@
         <title>Risk Rule Timeline</title>
         <search>
           <query>|from datamodel:"Risk.All_Risk"
-|search risk_object=$field_user$ search_name="Threat*" |  eval source=replace(source,"\w+\s+-\s+\w+\s+-\s+([^-]+)\s+-.*","\1")
-| table _time source risk_message threat_object | eval start=_time, label=source, tooltip=risk_message, data=threat_object | dedup _time label threat_object</query>
+|search risk_object=billy.tun search_name="Threat*" |  eval source=replace(source,"\w+\s+-\s+\w+\s+-\s+([^-]+)\s+-.*","\1")
+| table _time source risk_message threat_object |eval threat_object=if(isnull(threat_object),"None",threat_object)| eval start=_time, label=source, tooltip=risk_message, data=threat_object | dedup _time label threat_object</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
@@ -120,6 +120,7 @@
         <option name="event-timeline-viz.event-timeline-viz.tokenStart">tok_et_start</option>
         <option name="event-timeline-viz.event-timeline-viz.tooltipDateFormat">YYYY-MM-DD</option>
         <option name="event-timeline-viz.event-timeline-viz.tooltipTimeFormat">h:mm:ss A</option>
+        <option name="height">326</option>
         <option name="refresh.display">progressbar</option>
         <drilldown>
           <link target="_blank">search?q=%7Cfrom%20datamodel:%22Risk.All_Risk%22%0A%7Csearch%20risk_object=%22$field_user$%22%20search_name=%22*$tok_et_label$*%22&amp;earliest=$timepicker.earliest$&amp;latest=$timepicker.latest$</link>
@@ -127,7 +128,7 @@
       </viz>
     </panel>
   </row>
-    <row>
+  <row>
     <panel depends="$show_web$">
       <title>Attack Web</title>
       <input type="link" token="depth_tok" searchWhenChanged="true">
@@ -184,7 +185,7 @@
         <option name="network-diagram-viz.network-diagram-viz.draggableNodes">true</option>
         <option name="network-diagram-viz.network-diagram-viz.enablePhysics">false</option>
         <option name="network-diagram-viz.network-diagram-viz.hierarchy">true</option>
-        <option name="network-diagram-viz.network-diagram-viz.hierarchyDirection">Top-Down</option>
+        <option name="network-diagram-viz.network-diagram-viz.hierarchyDirection">Left-Right</option>
         <option name="network-diagram-viz.network-diagram-viz.hierarchySortMethod">hubsize</option>
         <option name="network-diagram-viz.network-diagram-viz.levelSeparation">200</option>
         <option name="network-diagram-viz.network-diagram-viz.linkTextLocation">middle</option>
@@ -332,7 +333,7 @@
 | lookup RBA_drilldown_searches.csv search_name
 |eval drilldown_search=replace(drilldown_search,"REPLACEME",risk_object)
 | rename search_name as Rule 
-| sort - firstSeen</query>
+| sort firstSeen</query>
           <earliest>$timepicker.earliest$</earliest>
           <latest>$timepicker.latest$</latest>
         </search>
