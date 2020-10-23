@@ -2,6 +2,7 @@ import sys, time, json, splunk.mining.dcutils as dcu
 sys.path.append("../lib")
 from splunklib.searchcommands import dispatch, GeneratingCommand, Configuration
 import splunklib.client as client
+import os
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error, six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import os
 
