@@ -1,4 +1,7 @@
-# SA-RBA
+# SA-RBA (DEPRECATED)
+This reference app is no longer supported but fear not, RBA is still thriving.  The mechanics detailed in this app are now built into Splunk Enterprise Security and fully supported as of version 6.6.
+
+The Investigative dashboards that are shown off in the Splunk RBA demo are an often requested artifact and I posted them here:  https://github.com/apger/RBA-ES6.6-Demo-Dashboards
 
 ## Dependencies
 URL Toolbox: https://splunkbase.splunk.com/app/2734/
